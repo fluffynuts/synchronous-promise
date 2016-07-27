@@ -195,7 +195,6 @@ describe('synchronous-promise', function() {
       createResolved(expected).catch(function(e) {
         capturedError = e;
       }).then(function(data) {
-        console.log('then called');
         captured = data;
       })
 
@@ -214,5 +213,37 @@ describe('synchronous-promise', function() {
 
       expect(captured).to.be.null;
     })
+  });
+  describe('static resolve', function() {
+    it('should be a function', function() {
+      expect(SynchronousPromise.resolve).to.be.a('function');
+    });
+    it('should return a resolved promise', function() {
+      var 
+        expected = 'foo',
+        result = SynchronousPromise.resolve(expected);
+      expect(result.status).to.equal('resolved');
+      var captured = null;
+      result.then(function(data) {
+        captured = data;
+      });
+      expect(captured).to.equal(expected);
+    })
+  });
+  describe('static reject', function() {
+    it('should be a function', function() {
+      expect(SynchronousPromise.reject).to.be.a('function');
+    });
+    it('should return a rejected promise', function() {
+      var
+        expected = 'moo',
+        result = SynchronousPromise.reject(expected);
+      expect(result.status).to.equal('rejected');
+      var captured = null;
+      result.catch(function(err) {
+        captured = err;
+      });
+      expect(captured).to.equal(expected);
+    });
   });
 })

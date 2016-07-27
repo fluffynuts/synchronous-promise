@@ -27,6 +27,7 @@ function SynchronousPromise(ctorFunction) {
       doResolve();
     }
   }, function() {
+    self.status = 'rejected'; // TODO: cleanup double-set
     self._catchData = toArray(arguments);
     self._applyCatch();
   })
@@ -88,6 +89,18 @@ SynchronousPromise.prototype = {
     this._data = undefined;
     catchFunction.apply(null, catchData);
   },
+};
+SynchronousPromise.resolve = function() {
+  var args = arguments;
+  return new SynchronousPromise(function(resolve, reject) {
+    resolve.apply(null, toArray(args));
+  });
+};
+SynchronousPromise.reject = function() {
+  var args = arguments;
+  return new SynchronousPromise(function(resolve, reject) {
+    reject.apply(null, toArray(args));
+  });
 }
 module.exports = {
   SynchronousPromise: SynchronousPromise
