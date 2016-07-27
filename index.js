@@ -101,7 +101,35 @@ SynchronousPromise.reject = function() {
   return new SynchronousPromise(function(resolve, reject) {
     reject.apply(null, toArray(args));
   });
-}
+};
+SynchronousPromise.all = function() {
+  var args = toArray(arguments);
+  return new SynchronousPromise(function(resolve, reject) {
+    var
+      allData = [],
+      doResolve = function() {
+        if (allData.length === args.length) {
+          resolve(allData);
+        }
+      },
+      rejected = false,
+      doReject = function(err) {
+        if (rejected) {
+          return;
+        }
+        rejected = true;
+        reject(err);
+      };
+    args.forEach(function(arg) {
+      arg.then(function(thisResult) {
+        allData.push(thisResult);
+        doResolve();
+      }).catch(function(err) {
+        doReject(err);
+      });
+    });
+  });
+};
 module.exports = {
   SynchronousPromise: SynchronousPromise
 }
