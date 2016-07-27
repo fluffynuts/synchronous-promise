@@ -1,0 +1,17 @@
+{
+  "name": "synchronous-promise",
+  "version": "1.0.0",
+  "description": "Synchronous Promise-like prototype to use in testing where you would have used an ES6 Promise",
+  "main": "index.js",
+  "scripts": {
+    "autotest": "mocha --watch index.spec.js --reporter mocha-yar",
+    "test": "mocha index.spec.js"
+  },
+  "author": "Davyd McColl <davydm@gmail.com> (https://github.com/fluffynuts)",
+  "license": "ISC",
+  "devDependencies": {
+    "chai": "^3.5.0",
+    "mocha": "^2.5.3",
+    "mocha-yar": "^1.0.10"
+  }
+}
