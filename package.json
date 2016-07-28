@@ -3,15 +3,25 @@
   "version": "1.0.0",
   "description": "Synchronous Promise-like prototype to use in testing where you would have used an ES6 Promise",
   "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fluffynuts/synchronous-promise.git"
+  },
   "scripts": {
     "autotest": "mocha --watch index.spec.js --reporter mocha-yar",
+    "autolint": "nodemon -x \"npm run lint\"",
+    "lint": "jslint index.js",
+    "pretest": "run-s lint",
     "test": "mocha index.spec.js"
   },
   "author": "Davyd McColl <davydm@gmail.com> (https://github.com/fluffynuts)",
-  "license": "ISC",
+  "license": "BSD-3-Clause",
   "devDependencies": {
     "chai": "^3.5.0",
+    "jslint": "^0.10.1",
     "mocha": "^2.5.3",
-    "mocha-yar": "^1.0.10"
+    "mocha-yar": "^1.0.10",
+    "nodemon": "^1.10.0",
+    "run-sequence": "^1.2.2"
   }
 }
