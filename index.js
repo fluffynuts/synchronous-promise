@@ -65,8 +65,8 @@ SynchronousPromise.prototype = {
     if (this._next.length === 0 || this._paused) {
       return;
     }
+    var next = this._next.shift();
     try {
-      var next = this._next.shift();
       if (!next) {
         return;
       }
@@ -76,7 +76,7 @@ SynchronousPromise.prototype = {
         data.then(function () {
           self._data = Array.prototype.slice.apply(arguments);
           self._applyNext();
-        }).catch(function(e) {
+        }).catch(function (e) {
           throw e;
         });
       } else {
@@ -87,7 +87,7 @@ SynchronousPromise.prototype = {
       this._next = [];
       this._data = undefined;
       if (next[1]) {
-        try { next[1](e); } catch (e) { console.log(e); }
+        try { next[1](e); } catch (ignore) { }
       } else {
         this._catchData = [e];
         this._applyCatch();

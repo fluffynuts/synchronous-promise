@@ -1,6 +1,6 @@
 {
   "name": "synchronous-promise",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Synchronous Promise-like prototype to use in testing where you would have used an ES6 Promise",
   "main": "index.js",
   "repository": {
@@ -12,7 +12,8 @@
     "autolint": "nodemon -x \"npm run lint\"",
     "lint": "jslint index.js",
     "pretest": "run-s lint",
-    "test": "mocha index.spec.js"
+    "test": "mocha index.spec.js",
+    "prepublish": "run-s test"
   },
   "author": "Davyd McColl <davydm@gmail.com> (https://github.com/fluffynuts)",
   "license": "BSD-3-Clause",
@@ -22,6 +23,7 @@
     "mocha": "^2.5.3",
     "mocha-yar": "^1.0.10",
     "nodemon": "^1.10.0",
+    "npm-run-all": "^2.3.0",
     "run-sequence": "^1.2.2"
   }
 }

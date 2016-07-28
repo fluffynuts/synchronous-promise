@@ -14,19 +14,21 @@ Often, in a test, we're stubbing out a function which would return a promise
 (eg http call, show a modal dialog requiring user interaction) with a promise
 that resolves immediately, eg (using, mocha/sinon/chai):
 
-    describe('the thing', () => {
-      it('will do some stuff', () => {
-        // Arrange
-        const asyncLibraryFake = {
-          someMethod: sinon.stub().returns('happy value!')
-        },
-        sut = createSystemUnderTestWith(asyncLibraryFake);
-        // Act
-        sut.doSomethingInteresting();
-        // Assert
-        //  [*]
-      })
-    });
+```javascript
+describe('the thing', () => {
+  it('will do some stuff', () => {
+    // Arrange
+    const asyncLibraryFake = {
+      someMethod: sinon.stub().returns('happy value!')
+    },
+    sut = createSystemUnderTestWith(asyncLibraryFake);
+    // Act
+    sut.doSomethingInteresting();
+    // Assert
+    //  [*]
+  })
+});
+```
 
 [*] Ideally, we'd just have assertions here, but the code above has backgrounded,
 so we're not going to get our expected results unless we employ async testing
@@ -38,21 +40,22 @@ from the
   doSomethingInteresting
 function and perform our asserts in there: 
   
-    describe('the thing', () => {
-      it('will do some stuff', done => {
-        // Arrange
-        const asyncLibraryFake = {
-          someMethod: sinon.stub().returns('happy value!')
-        },
-        sut = createSystemUnderTestWith(asyncLibraryFake);
-        // Act
-        sut.doSomethingInteresting().then(() => {
-          // Assert
-          done()
-        });
-      })
+```javascript
+describe('the thing', () => {
+  it('will do some stuff', done => {
+    // Arrange
+    const asyncLibraryFake = {
+      someMethod: sinon.stub().returns('happy value!')
+    },
+    sut = createSystemUnderTestWith(asyncLibraryFake);
+    // Act
+    sut.doSomethingInteresting().then(() => {
+      // Assert
+      done()
     });
-
+  })
+});
+```
 ***And there's nothing with this strategy.***
 
 I need to put that out there before anyone takes offense or thinks that I'm suggesting 
@@ -73,87 +76,117 @@ and make assertions about "after resolution" state, without making our tests
 async at all. It made testing a little easier (imo) and the idea has been
 propagated into frameworks like `angular-mocks`
 
-##Usage
+### Usage
+
 SynchronousPromise looks (from the outside) a lot like an ES6 promise. We construct
 the same:
 
-    var promise = new SynchronousPromise((resolve, reject) => {
-      if (Math.random() < 0.1) {
-        reject('unlucky!');
-      } else {
-        resolve('lucky!');
-      }
-    });
+```javascript
+var promise = new SynchronousPromise((resolve, reject) => {
+  if (Math.random() < 0.1) {
+    reject('unlucky!');
+  } else {
+    resolve('lucky!');
+  }
+});
+```
 
 They can, of course, be chained:
 
-    var initial - new SynchronousPromise((resolve, reject) => {
-      resolve('happy!');
-    });
-    initial.then(message => {
-      console.log(message);
-    })
+```javascript
+var initial = new SynchronousPromise((resolve, reject) => {
+  resolve('happy!');
+});
+initial.then(message => {
+  console.log(message);
+})
+```
 
 And have error handling, either from the basic A+ spec:
    
-    initial.then(message => {
-      console.log(message);
-    }, error => {
-      console.error(error);
-    });
+```javascript
+initial.then(message => {
+  console.log(message);
+}, error => {
+  console.error(error);
+});
+```
 
 Or using the more familiar `catch()`:
 
-    initial.then(message => {
-      console.log(message);
-    }).catch(error => {
-      console.error(error);
-    })
+```javascript
+initial.then(message => {
+  console.log(message);
+}).catch(error => {
+  console.error(error);
+})
+```
 
 `.catch()` starts a new promise chain, so you can pick up with new logic
 if you want to. `.then()` can deal with returning raw values or promises
 (as per A+)
 
-##Statics
+### Statics
 `.all()`, `.resolve()` and `.reject()` are available on the `SynchronousPromise`
 object itself:
 
-    SynchronousPromise.all([p1, p2]).then(results => {
-      // results is an array of results from all promises
-    }).catch(err => {
-      // err is any single error thrown by a promise in the array
-    });
+```javascript
+SynchronousPromise.all([p1, p2]).then(results => {
+  // results is an array of results from all promises
+}).catch(err => {
+  // err is any single error thrown by a promise in the array
+});
 
-    SynchronousPromise.resolve('foo');  // creates an already-resolved promise
+SynchronousPromise.resolve('foo');  // creates an already-resolved promise
 
-    SynchronousPromise.reject('bar'); // creats an already-rejected promise
-    
+SynchronousPromise.reject('bar'); // creats an already-rejected promise
+```
 
-##Extras
+### Extras
 `SynchronousPromise` also provides two extra functions to make testing a little
 easier:
 
 `pause()` pauses the promise chain at the point at which it is called:
 
-    SynchronousPromise.resolve('abc').then(data => {
-      // this will be run
-      return '123';
-    }).pause().then(data2 => {
-      // we don't get here without resuming
-    });
+```javascript
+SynchronousPromise.resolve('abc').then(data => {
+  // this will be run
+  return '123';
+}).pause().then(data2 => {
+  // we don't get here without resuming
+});
+```
 
 and `resume()` resumes operations:
 
-    var
-      promise = SynchronousPromise.resolve('123').pause(),
-      captured = null;
-    promise.then(data => {
-      captured = data;
-    });
+```javascript
+var
+  promise = SynchronousPromise.resolve('123').pause(),
+  captured = null;
+promise.then(data => {
+  captured = data;
+});
 
-    expect(data).to.be.null;   // because we paused...
-    promise.resume();
-    expect(data).to.equal('123'); // because we resumed...
+expect(data).to.be.null;   // because we paused...
+promise.resume();
+expect(data).to.equal('123'); // because we resumed...
+```
 
 You can use `pause()` and `resume()` to test the state of your system under
 test at defined points in a series of promise chains
+
+### ES5
+SynchronousPromise is purposefully written with prototypical, ES5 syntax so you
+can use it from ES5 if you like.
+
+### Production code
+The main aim of SynchronousPromise is to facilitate easier testing. That being
+said, it appears to conform to expected `Promise` behaviour, barring the
+always-backgrounded behaviour. One might be tempted to just use it everywhere.
+
+**However**: I'd highly recommend using *any* of the more venerable promise implementations
+instead of SynchronousPromise in your production code -- preferably the vanilla
+ES6 Promise, where possible (or the shim, where you're in ES5). Or Q.
+Or jQUery.Deferred(). Basically, this seems to work quite well for testing and
+I've tried to implement every behaviour I'd expect from a promise -- but I'm
+pretty sure that a native `Promise` will be better for production code any day. 
