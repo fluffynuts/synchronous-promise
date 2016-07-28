@@ -1,6 +1,6 @@
 {
   "name": "synchronous-promise",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Synchronous Promise-like prototype to use in testing where you would have used an ES6 Promise",
   "main": "index.js",
   "repository": {
