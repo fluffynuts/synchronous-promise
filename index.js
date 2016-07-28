@@ -4,6 +4,7 @@ function toArray(args) {
 function SynchronousPromise(ctorFunction) {
   this.status = 'pending';
   this._next = [];
+  this._paused = false;
   var self = this;
   var doCatch = function(args) {
     self._catchData = toArray(args);
@@ -40,8 +41,23 @@ SynchronousPromise.prototype = {
     }
     return this;
   },
+  catch: function(fn) {
+    this._catchFunction = fn;
+    this._applyCatch();
+    return this;
+  },
+  pause: function() {
+    this._paused = true;
+    return this;
+  },
+  resume: function() {
+    this._paused = false;
+    this._applyCatch();
+    this._applyNext();
+    return this;
+  },
   _applyNext: function() {
-    if (!this._next) {
+    if (this._next.length === 0 || this._paused) {
       return;
     }
     try {
@@ -72,12 +88,10 @@ SynchronousPromise.prototype = {
             thing['then'] &&
             typeof(thing['then']) === 'function';
   },
-  catch: function(fn) {
-    this._catchFunction = fn;
-    this._applyCatch();
-    return this;
-  },
   _applyCatch: function() {
+    if (this._paused) {
+      return;
+    }
     var 
       catchFunction = this._catchFunction,
       catchData = this._catchData;
