@@ -179,6 +179,12 @@ test at defined points in a series of promise chains
 SynchronousPromise is purposefully written with prototypical, ES5 syntax so you
 can use it from ES5 if you like.
 
+## Typescript
+The `synchronous-promise` package includes an `index.d.ts`. To install, run:
+```
+typings install npm:synchronous-promise --save
+```
+
 ### Production code
 The main aim of SynchronousPromise is to facilitate easier testing. That being
 said, it appears to conform to expected `Promise` behaviour, barring the
