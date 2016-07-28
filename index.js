@@ -9,8 +9,8 @@ function SynchronousPromise(ctorFunction) {
   this._runConstructorFunction(ctorFunction);
 }
 SynchronousPromise.prototype = {
-  then: function (next) {
-    this._next.push(next);
+  then: function (next, fail) {
+    this._next.push([next, fail]);
     if (this.status === 'resolved') {
       this._applyNext();
     }
@@ -70,12 +70,14 @@ SynchronousPromise.prototype = {
       if (!next) {
         return;
       }
-      var data = next.apply(null, this._data);
+      var data = next[0].apply(null, this._data);
       var self = this;
       if (this._looksLikePromise(data)) {
         data.then(function () {
           self._data = Array.prototype.slice.apply(arguments);
           self._applyNext();
+        }).catch(function(e) {
+          throw e;
         });
       } else {
         this._data = [data];
@@ -84,8 +86,12 @@ SynchronousPromise.prototype = {
     } catch (e) {
       this._next = [];
       this._data = undefined;
-      this._catchData = [e];
-      this._applyCatch();
+      if (next[1]) {
+        try { next[1](e); } catch (e) { console.log(e); }
+      } else {
+        this._catchData = [e];
+        this._applyCatch();
+      }
     }
   },
   _looksLikePromise: function (thing) {

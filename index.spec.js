@@ -36,6 +36,13 @@ describe('synchronous-promise', function () {
       var sut = createResolved();
       expect(sut.then(function () {})).to.equal(sut);
     });
+    it('should return the same promise v2', function () {
+      var
+        result = createResolved().then(function() {
+          /* purposely don't return anything */
+        });
+      expect(result).to.be.instanceOf(SynchronousPromise);
+    });
     it('should call into the catch function when the function given to then throws', function () {
       var
         sut = createResolved(),
@@ -51,9 +58,26 @@ describe('synchronous-promise', function () {
 
       expect(received).to.eql(new Error(expected));
     });
+    it('should call into the failure function when the predecessor fails', function() {
+      var
+        sut = createResolved(),
+        expected = 'the error',
+        captured = null,
+        catchCaptured = null;
+      sut.then(function() {
+        throw expected;
+      }, function(e) {
+        captured = e;
+      }).catch(function(e) {
+        catchCaptured = e;
+      });
+
+      expect(captured).to.equal(expected);
+      expect(catchCaptured).to.be.null;
+    });
     it('should bring the first resolve value into the first then', function () {
       var
-        initial = '123'; 
+        initial = '123',
         captured = null;
       createResolved(initial).then(function (data) {
         captured = data;
@@ -78,6 +102,19 @@ describe('synchronous-promise', function () {
       });
       expect(captured).to.equal('123');
     })
+    it('should catch when a subsequent resolution returns a rejected promise', function() {
+      var
+        initial = createResolved('123'),
+        captured = null,
+        expected = 'le error';
+      initial.then(function() {
+        return createRejected(expected);
+      }).catch(function(e) {
+        captured = e;
+      })
+
+      expect(captured).to.equal(expected);
+    });
     it('should run a simple chain', function () {
       var
         initial = '123',
@@ -189,7 +226,7 @@ describe('synchronous-promise', function () {
         });
 
         expect(result).to.exist;
-        expect(result instanceof SynchronousPromise).to.be.true
+        expect(result).to.be.instanceOf(SynchronousPromise);
         expect(result).to.equal(promise);
     });
     it('should not interfere with a later then if there is no error', function () {
@@ -247,7 +284,7 @@ describe('synchronous-promise', function () {
     });
     it('should prevent rejection from continuing past at that point', function () {
       var
-        calls = 0
+        calls = 0,
         captured = null;
 
       createRejected('123').then(function () {
@@ -281,7 +318,7 @@ describe('synchronous-promise', function () {
     })
     it('should resume resolution operations after the last pause', function () {
       var
-        calls = 0;
+        calls = 0,
         promise = createResolved('123').then(function () {
           return calls++;
         }).pause().then(function () {
@@ -293,7 +330,7 @@ describe('synchronous-promise', function () {
     });
     it('should resume rejection operations after the last pause', function () {
       var
-        calls = 0;
+        calls = 0,
         captured = null,
         expected = 'die, scum!',
         promise = createResolved('123').then(function () {
