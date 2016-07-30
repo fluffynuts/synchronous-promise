@@ -19,7 +19,7 @@ describe('the thing', () => {
   it('will do some stuff', () => {
     // Arrange
     const asyncLibraryFake = {
-      someMethod: sinon.stub().returns('happy value!')
+      someMethod: sinon.stub().returns(Promise.resolve('happy value!'))
     },
     sut = createSystemUnderTestWith(asyncLibraryFake);
     // Act
@@ -45,7 +45,7 @@ describe('the thing', () => {
   it('will do some stuff', done => {
     // Arrange
     const asyncLibraryFake = {
-      someMethod: sinon.stub().returns('happy value!')
+      someMethod: sinon.stub().returns(Promise.resolve('happy value!'))
     },
     sut = createSystemUnderTestWith(asyncLibraryFake);
     // Act
@@ -141,6 +141,9 @@ SynchronousPromise.resolve('foo');  // creates an already-resolved promise
 
 SynchronousPromise.reject('bar'); // creats an already-rejected promise
 ```
+
+(`race()` isn't because I haven't determined a good strategy for that yet -- but it's
+unlikely you'll need `race()` from a test).
 
 ### Extras
 `SynchronousPromise` also provides two extra functions to make testing a little
