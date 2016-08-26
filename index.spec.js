@@ -6,7 +6,6 @@
 var
   expect = require('chai').expect,
   SynchronousPromise = require('./index').SynchronousPromise;
-console.log('-- test run at: ', new Date());
 describe('synchronous-promise', function () {
   it('should be constructable', function () {
     expect(SynchronousPromise).to.exist;
@@ -22,14 +21,10 @@ describe('synchronous-promise', function () {
     return new SynchronousPromise(ctor);
   }
   function createResolved(data) {
-    return create(function (resolve, reject) {
-      resolve(data);
-    });
+    return SynchronousPromise.resolve(data);
   }
   function createRejected(data) {
-    return create(function (resolve, reject) {
-      reject(data);
-    });
+    return SynchronousPromise.reject(data);
   }
   describe('then', function () {
     it('should return the same promise', function () {
@@ -346,6 +341,22 @@ describe('synchronous-promise', function () {
       expect(calls).to.equal(0);
       expect(captured).to.equal(expected);
     });
+    it('should resume a promise which was started rejected as rejected', function() {
+      var
+        calls = 0,
+        captured = null,
+        expected = 'it\'s the end of the world!',
+        promise = SynchronousPromise.reject(expected).pause().then(function() {
+          calls++;
+        }).catch(function(e) {
+          captured = e;
+        });
+      expect(calls).to.equal(0);
+      expect(captured).to.be.null;
+      promise.resume();
+      expect(calls).to.equal(0);
+      expect(captured).to.equal(expected);
+    })
   })
   describe('static resolve', function () {
     it('should be a function', function () {

@@ -8,12 +8,14 @@
     "url": "git+https://github.com/fluffynuts/synchronous-promise.git"
   },
   "scripts": {
-    "autotest": "mocha --watch index.spec.js --reporter mocha-yar",
-    "autolint": "nodemon -x \"npm run lint\"",
+    "preautotest-once": "node -e \"console.log('Tests started: ', new Date());\"",
+    "autotest-once": "mocha index.spec.js --reporter mocha-yar",
+    "autotest": "nodemon -q -x \"run-s -s autotest-once\"",
+    "autolint": "nodemon -q -x \"run-s -s run lint\"",
     "lint": "jslint index.js",
     "pretest": "run-s lint",
     "test": "mocha index.spec.js",
-    "prepublish": "run-s test"
+    "prepublish": "run-s -s test"
   },
   "author": "Davyd McColl <davydm@gmail.com> (https://github.com/fluffynuts)",
   "license": "BSD-3-Clause",
@@ -22,7 +24,7 @@
     "jslint": "^0.10.1",
     "mocha": "^2.5.3",
     "mocha-yar": "^1.0.10",
-    "nodemon": "^1.10.0",
+    "nodemon": "^1.10.2",
     "npm-run-all": "^2.3.0",
     "run-sequence": "^1.2.2"
   }
