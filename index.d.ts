@@ -2,6 +2,8 @@ export interface SynchronousPromise<T> extends Promise<T> {
   pause: () => SynchronousPromise<T>
   resume: () => SynchronousPromise<T>
 }
+
+export type ValueOrPromiseOfValue<T> = T | PromiseLike<T>
 export interface SynchronousPromiseConstructor {
   /**
     * A reference to the prototype.
@@ -22,7 +24,8 @@ export interface SynchronousPromiseConstructor {
     * @param values An array of Promises.
     * @returns A new Promise.
     */
-  all<T>(values: IterableShim<T | PromiseLike<T>>): SynchronousPromise<T[]>;
+  all<T>(v1: ValueOrPromiseOfValue<T>[]): SynchronousPromise<T[]>;
+  all<TAll>(...values: ValueOrPromiseOfValue<TAll>[]): SynchronousPromise<TAll[]>;
 
   /**
     * Creates a Promise that is resolved or rejected when any of the provided Promises are resolved

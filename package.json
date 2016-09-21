@@ -1,6 +1,6 @@
 {
   "name": "synchronous-promise",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "Synchronous Promise-like prototype to use in testing where you would have used an ES6 Promise",
   "main": "index.js",
   "repository": {
@@ -9,7 +9,7 @@
   },
   "scripts": {
     "preautotest-once": "node -e \"console.log('Tests started: ', new Date());\"",
-    "autotest-once": "mocha index.spec.js --reporter mocha-yar",
+    "autotest-once": "mocha *.spec.js --reporter mocha-yar",
     "autotest": "nodemon -q -x \"run-s -s autotest-once\"",
     "autolint": "nodemon -q -x \"run-s -s run lint\"",
     "lint": "jslint index.js",

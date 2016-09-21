@@ -5,7 +5,9 @@
 'use strict';
 var
   expect = require('chai').expect,
-  SynchronousPromise = require('./index').SynchronousPromise;
+  sut = require('./index'),
+  SynchronousPromise = sut.SynchronousPromise,
+  _argumentsToArray = sut._argumentsToArray;
 describe('synchronous-promise', function () {
   it('should be constructable', function () {
     expect(SynchronousPromise).to.exist;
@@ -394,12 +396,28 @@ describe('synchronous-promise', function () {
     it('should be a function', function () {
       expect(SynchronousPromise.all).to.be.a('function')
     })
-    it('should resolve with all values from given resolved promised', function () {
+    it('should resolve with all values from given resolved promises as variable args', function () {
       var
         p1 = createResolved('abc'),
         p2 = createResolved('123'),
         all = SynchronousPromise.all(p1, p2),
         captured = null;
+
+      all.then(function (data) {
+        captured = data;
+      });
+
+      expect(captured).to.have.length(2);
+      expect(captured).to.contain('abc');
+      expect(captured).to.contain('123');
+    });
+    it('should resolve with all values from given resolved promises as an array', function () {
+      var
+        p1 = createResolved('abc'),
+        p2 = createResolved('123'),
+        all = SynchronousPromise.all([p1, p2]),
+        captured = null;
+
       all.then(function (data) {
         captured = data;
       });

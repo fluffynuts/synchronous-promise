@@ -1,7 +1,8 @@
 'use strict';
-function toArray(args) {
+function argumentsToArray(args) {
   return Array.prototype.slice.apply(args);
 }
+
 function SynchronousPromise(ctorFunction) {
   this.status = 'pending';
   this._next = [];
@@ -34,18 +35,18 @@ SynchronousPromise.prototype = {
   _runConstructorFunction: function (ctorFunction) {
     var self = this;
     var doCatch = function (args) {
-      self._catchData = toArray(args);
+      self._catchData = argumentsToArray(args);
       self._applyCatch();
     };
     ctorFunction(function () {
-      self._data = toArray(arguments);
+      self._data = argumentsToArray(arguments);
       var doResolve = function () {
         self.status = 'resolved';
         self._applyNext();
       };
       if (self._looksLikePromise(self._data[0])) {
         self._data[0].then(function () {
-          self._data = toArray(arguments);
+          self._data = argumentsToArray(arguments);
           doResolve();
         }).catch(function () {
           doCatch(arguments);
@@ -118,17 +119,21 @@ SynchronousPromise.prototype = {
 SynchronousPromise.resolve = function () {
   var args = arguments;
   return new SynchronousPromise(function (resolve) {
-    resolve.apply(null, toArray(args));
+    resolve.apply(null, argumentsToArray(args));
   });
 };
 SynchronousPromise.reject = function () {
   var args = arguments;
   return new SynchronousPromise(function (resolve, reject) {
-    reject.apply(null, toArray(args));
+    reject.apply(null, argumentsToArray(args));
   });
 };
 SynchronousPromise.all = function () {
-  var args = toArray(arguments);
+  //var args = argumentsToArray(arguments);
+  var args = argumentsToArray(arguments);
+  if (Array.isArray(args[0])) {
+    args = args[0];
+  }
   return new SynchronousPromise(function (resolve, reject) {
     var
       allData = [],
