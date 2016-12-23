@@ -426,6 +426,29 @@ describe('synchronous-promise', function () {
       expect(captured).to.contain('abc');
       expect(captured).to.contain('123');
     });
+    it('should resolve with values in the correct order', function() {
+      var
+        resolve1,
+        resolve2,
+        captured;
+
+      var p1 = create(function(resolve) {
+        resolve1 = resolve;
+      });
+
+      var p2 = create(function(resolve) {
+        resolve2 = resolve;
+      });
+
+      SynchronousPromise.all([p1, p2]).then(function(data) {
+        captured = data;
+      });
+
+      resolve2('a');
+      resolve1('b');
+
+      expect(captured).to.deep.equal(['b', 'a']);
+    });
     it('should reject if any promise rejects', function () {
       var
         p1 = createResolved('abc'),

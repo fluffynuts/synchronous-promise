@@ -137,8 +137,9 @@ SynchronousPromise.all = function () {
   return new SynchronousPromise(function (resolve, reject) {
     var
       allData = [],
+      numResolved = 0,
       doResolve = function () {
-        if (allData.length === args.length) {
+        if (numResolved === args.length) {
           resolve(allData);
         }
       },
@@ -150,9 +151,10 @@ SynchronousPromise.all = function () {
         rejected = true;
         reject(err);
       };
-    args.forEach(function (arg) {
+    args.forEach(function (arg, idx) {
       arg.then(function (thisResult) {
-        allData.push(thisResult);
+        allData[idx] = thisResult;
+        numResolved += 1;
         doResolve();
       }).catch(function (err) {
         doReject(err);
