@@ -56,7 +56,7 @@ describe('the thing', () => {
   })
 });
 ```
-***And there's nothing with this strategy.***
+***And there's nothing wrong with this strategy.***
 
 I need to put that out there before anyone takes offense or thinks that I'm suggesting 
 that they're "doing it wrong".
