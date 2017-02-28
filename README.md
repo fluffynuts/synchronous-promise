@@ -180,7 +180,8 @@ test at defined points in a series of promise chains
 
 ### ES5
 SynchronousPromise is purposefully written with prototypical, ES5 syntax so you
-can use it from ES5 if you like.
+can use it from ES5 if you like. Use the `synchronous-promise.js` file from the 
+`dist` folder if you'd like to include it in a browser environment (eg karma).
 
 ## Typescript
 The `synchronous-promise` package includes an `index.d.ts`. To install, run:

@@ -1,6 +1,6 @@
 {
   "name": "synchronous-promise",
-  "version": "1.0.7",
+  "version": "1.0.10",
   "description": "Synchronous Promise-like prototype to use in testing where you would have used an ES6 Promise",
   "main": "index.js",
   "repository": {
@@ -15,13 +15,17 @@
     "lint": "jslint index.js",
     "pretest": "run-s lint",
     "test": "mocha index.spec.js",
-    "prepublish": "run-s -s test"
+    "predist": "mkdirp dist",
+    "dist": "browserify browser.js -o dist/synchronous-promise.js",
+    "prepublish": "run-s -s test dist"
   },
   "author": "Davyd McColl <davydm@gmail.com> (https://github.com/fluffynuts)",
   "license": "BSD-3-Clause",
   "devDependencies": {
+    "browserify": "^14.1.0",
     "chai": "^3.5.0",
     "jslint": "^0.10.1",
+    "mkdirp": "^0.5.1",
     "mocha": "^2.5.3",
     "mocha-yar": "^1.0.10",
     "nodemon": "^1.10.2",
