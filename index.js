@@ -1,10 +1,10 @@
-'use strict';
+"use strict";
 function argumentsToArray(args) {
   return Array.prototype.slice.apply(args);
 }
 
 function SynchronousPromise(ctorFunction) {
-  this.status = 'pending';
+  this.status = "pending";
   this._next = [];
   this._paused = false;
   this._runConstructorFunction(ctorFunction);
@@ -12,7 +12,7 @@ function SynchronousPromise(ctorFunction) {
 SynchronousPromise.prototype = {
   then: function (next, fail) {
     this._next.push([next, fail]);
-    if (this.status === 'resolved') {
+    if (this.status === "resolved") {
       this._applyNext();
     }
     return this;
@@ -41,7 +41,7 @@ SynchronousPromise.prototype = {
     ctorFunction(function () {
       self._data = argumentsToArray(arguments);
       var doResolve = function () {
-        self.status = 'resolved';
+        self.status = "resolved";
         self._applyNext();
       };
       if (self._looksLikePromise(self._data[0])) {
@@ -60,7 +60,7 @@ SynchronousPromise.prototype = {
     });
   },
   _setRejected: function () {
-    this.status = 'rejected';
+    this.status = "rejected";
   },
   _applyNext: function () {
     if (this._next.length === 0 || this._paused) {
@@ -98,7 +98,7 @@ SynchronousPromise.prototype = {
   _looksLikePromise: function (thing) {
     return thing &&
             thing.then &&
-            typeof (thing.then) === 'function';
+            typeof (thing.then) === "function";
   },
   _applyCatch: function () {
     if (this._paused) {

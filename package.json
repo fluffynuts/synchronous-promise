@@ -11,7 +11,7 @@
     "preautotest-once": "node -e \"console.log('Tests started: ', new Date());\"",
     "autotest-once": "mocha *.spec.js --reporter mocha-yar",
     "autotest": "nodemon -q -x \"run-s -s autotest-once\"",
-    "autolint": "nodemon -q -x \"run-s -s run lint\"",
+    "autolint": "nodemon -q -x \"run-s -s lint\"",
     "lint": "jslint index.js",
     "pretest": "run-s lint",
     "test": "mocha index.spec.js",
