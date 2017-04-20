@@ -149,6 +149,35 @@ unlikely you'll need `race()` from a test).
 `SynchronousPromise` also provides two extra functions to make testing a little
 easier:
 
+#### Static methods
+The `unresolved()` method returns a new, unresolved `SynchronousPromise` with
+the constructor-function-provided `resolve` and `reject` functions attached as properties.
+Use this when you have no intention of resolving or rejecting the promise or when you
+want to resolve or reject at some later date.
+
+```javascript
+var
+  resolvedValue,
+  rejectedValue,
+  promise = SynchronousPromise.unresolved().then(function(data) {
+    resolved = data;
+  }).catch(function(data) {
+    rejected = data;
+  });
+  // at this point, resolved and rejected are both undefined
+
+  // ... some time later ...
+  if (Math.random() > 0.5) {
+    promise.resolve("yay");
+    // now resolvedValue is "yay" and rejectedValue is still undefined
+  } else {
+    promise.reject("boo");
+    // now rejectedValue is "boo" and resolvedValue is still undefined
+  }
+```
+
+#### Instance methods
+
 `pause()` pauses the promise chain at the point at which it is called:
 
 ```javascript
