@@ -71,8 +71,8 @@ SynchronousPromise.prototype = {
       if (!next) {
         return;
       }
-      var data = next[0].apply(null, this._data);
-      var self = this;
+      var data = next[0].apply(null, this._data),
+        self = this;
       if (this._looksLikePromise(data)) {
         data.then(function () {
           self._data = Array.prototype.slice.apply(arguments);
@@ -97,15 +97,14 @@ SynchronousPromise.prototype = {
   },
   _looksLikePromise: function (thing) {
     return thing &&
-            thing.then &&
-            typeof (thing.then) === "function";
+      thing.then &&
+      typeof (thing.then) === "function";
   },
   _applyCatch: function () {
     if (this._paused) {
       return;
     }
-    var
-      catchFunction = this._catchFunction,
+    var catchFunction = this._catchFunction,
       catchData = this._catchData;
     if (!(catchFunction && catchData)) {
       return; // nyom
@@ -129,7 +128,6 @@ SynchronousPromise.reject = function () {
   });
 };
 SynchronousPromise.all = function () {
-  //var args = argumentsToArray(arguments);
   var args = argumentsToArray(arguments);
   if (Array.isArray(args[0])) {
     args = args[0];
@@ -162,6 +160,17 @@ SynchronousPromise.all = function () {
     });
   });
 };
+SynchronousPromise.unresolved = function () {
+  var stash = {};
+  var result = new SynchronousPromise(function (resolve, reject) {
+    stash.resolve = resolve;
+    stash.reject = reject;
+  });
+  result.resolve = stash.resolve;
+  result.reject = stash.reject;
+  return result;
+};
+
 module.exports = {
   SynchronousPromise: SynchronousPromise
 };

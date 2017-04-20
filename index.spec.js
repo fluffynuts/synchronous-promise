@@ -440,21 +440,21 @@ describe("synchronous-promise", function () {
       expect(captured).to.contain("abc");
       expect(captured).to.contain("123");
     });
-    it("should resolve with values in the correct order", function() {
+    it("should resolve with values in the correct order", function () {
       var
         resolve1,
         resolve2,
         captured;
 
-      var p1 = create(function(resolve) {
+      var p1 = create(function (resolve) {
         resolve1 = resolve;
       });
 
-      var p2 = create(function(resolve) {
+      var p2 = create(function (resolve) {
         resolve2 = resolve;
       });
 
-      SynchronousPromise.all([p1, p2]).then(function(data) {
+      SynchronousPromise.all([p1, p2]).then(function (data) {
         captured = data;
       });
 
@@ -478,5 +478,96 @@ describe("synchronous-promise", function () {
       expect(capturedData).to.be.null;
       expect(capturedError).to.equal("123");
     });
-  })
+  });
+  describe("static unresolved", function () {
+    it("should exist as a function", function () {
+      // Arrange
+      // Act
+      // Assert
+      expect(SynchronousPromise.unresolved).to.exist;
+      expect(SynchronousPromise.unresolved).to.be.a("function");
+    });
+    it("should return a new SynchronousPromise", function () {
+      // Arrange
+      // Act
+      var result1 = SynchronousPromise.unresolved(),
+        result2 = SynchronousPromise.unresolved();
+      // Assert
+      expect(result1).to.exist;
+      expect(result2).to.exist;
+      expect(Object.getPrototypeOf(result1)).to.equal(SynchronousPromise.prototype);
+      expect(Object.getPrototypeOf(result2)).to.equal(SynchronousPromise.prototype);
+      expect(result1).not.to.equal(result2);
+    });
+    describe("result", function () {
+      it("should not be resolve or rejected", function () {
+        // Arrange
+        var resolved = false,
+          rejected = false;
+        // Act
+        SynchronousPromise.unresolved().then(function () {
+          resolved = true;
+        }).catch(function () {
+          rejected = true;
+        });
+        // Assert
+        expect(resolved).to.be.false;
+        expect(rejected).to.be.false;
+      });
+      describe("resolve property", function () {
+        it("should be a function", function () {
+          // Arrange
+          // Act
+          var sut = SynchronousPromise.unresolved();
+          // Assert
+          expect(sut.resolve).to.exist;
+          expect(sut.resolve).to.be.a("function");
+        });
+        it("should resolve the promise when invoked", function() {
+          // Arrange
+          var
+            resolved = undefined,
+            error = undefined,
+            sut = SynchronousPromise.unresolved().then(function(result) {
+              resolved = result;
+            }).catch(function(err) {
+              error = err;
+            }),
+            expected = { key: "value" };
+          // Act
+          sut.resolve(expected);
+          // Assert
+          expect(resolved).to.equal(expected);
+          expect(error).not.to.exist;
+        });
+      });
+      describe("reject property", function () {
+        it("should be a function", function () {
+          // Arrange
+          // Act
+          var sut = SynchronousPromise.unresolved();
+          // Assert
+          expect(sut.reject).to.exist;
+          expect(sut.reject).to.be.a("function");
+        });
+        it("should reject the promise when invoked", function() {
+          // Arrange
+          var
+            resolved = undefined,
+            error = undefined,
+            sut = SynchronousPromise.unresolved().then(function(result) {
+              resolved = result;
+            }).catch(function(err) {
+              error = err;
+            }),
+            expected = { key: "value" };
+          // Act
+          sut.reject(expected);
+          // Assert
+          expect(error).to.equal(expected);
+          expect(resolved).not.to.exist;
+        });
+      });
+    });
+  });
 })
