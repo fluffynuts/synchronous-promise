@@ -6,6 +6,7 @@ function argumentsToArray(args) {
 function SynchronousPromise(ctorFunction) {
   this.status = "pending";
   this._next = [];
+  this._catchFunctions = [];
   this._paused = false;
   this._runConstructorFunction(ctorFunction);
 }
@@ -18,8 +19,10 @@ SynchronousPromise.prototype = {
     return this;
   },
   catch: function (fn) {
-    this._catchFunction = fn;
-    this._applyCatch();
+    this._catchFunctions.push(fn);
+    if (this.status === "rejected") {
+      this._applyCatch();
+    }
     return this;
   },
   pause: function () {
@@ -28,20 +31,23 @@ SynchronousPromise.prototype = {
   },
   resume: function () {
     this._paused = false;
-    this._applyCatch();
-    this._applyNext();
+    var self = this;
+    this._applyCatch().then(function () {
+      self._applyNext();
+    });
     return this;
   },
   _runConstructorFunction: function (ctorFunction) {
     var self = this;
     var doCatch = function (args) {
       self._catchData = argumentsToArray(args);
+      self._setRejected();
       self._applyCatch();
     };
     ctorFunction(function () {
       self._data = argumentsToArray(arguments);
       var doResolve = function () {
-        self.status = "resolved";
+        self._setResolved();
         self._applyNext();
       };
       if (self._looksLikePromise(self._data[0])) {
@@ -61,6 +67,9 @@ SynchronousPromise.prototype = {
   },
   _setRejected: function () {
     this.status = "rejected";
+  },
+  _setResolved: function () {
+    this.status = "resolved";
   },
   _applyNext: function () {
     if (this._next.length === 0 || this._paused) {
@@ -91,6 +100,7 @@ SynchronousPromise.prototype = {
         try { next[1](e); } catch (ignore) { }
       } else {
         this._catchData = [e];
+        this._setRejected();
         this._applyCatch();
       }
     }
@@ -101,18 +111,31 @@ SynchronousPromise.prototype = {
       typeof (thing.then) === "function";
   },
   _applyCatch: function () {
-    if (this._paused) {
-      return;
+    if (this._paused || this._catchFunctions.length === 0) {
+      return SynchronousPromise.resolve();
     }
-    var catchFunction = this._catchFunction,
+    var catchFunction = (this._catchFunctions || []).shift(),
       catchData = this._catchData;
     if (!(catchFunction && catchData)) {
-      return; // nyom
+      return SynchronousPromise.resolve(); // nyom
     }
-    this._setRejected();
-    this._next = [];
-    this._data = undefined;
-    catchFunction.apply(null, catchData);
+    var result = catchFunction.apply(null, catchData);
+    if (this._looksLikePromise(result)) {
+      var self = this;
+      result.then(function () {
+        self._data = Array.prototype.slice.apply(arguments);
+        self._setResolved();
+        self._applyNext();
+      }).catch(function () {
+        self._catchData = Array.prototype.slice.apply(arguments);
+        self._applyCatch();
+      });
+    } else {
+      this._setRejected();
+      this._next = [];
+      this._data = undefined;
+    }
+    return SynchronousPromise.reject();
   },
 };
 SynchronousPromise.resolve = function () {

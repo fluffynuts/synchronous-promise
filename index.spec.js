@@ -239,7 +239,7 @@ describe("synchronous-promise", function () {
 
       expect(capturedError).to.be.null;
       expect(captured).to.equal(expected);
-    })
+    });
     it("should prevent then handlers after the error from being called", function () {
       var
         captured = null;
@@ -251,7 +251,66 @@ describe("synchronous-promise", function () {
       })
 
       expect(captured).to.be.null;
-    })
+    });
+
+    it("should re-catch if a catch handler returns a rejected promise", function (done) {
+      // Arrange
+      var
+        expected = "123",
+        pausedRejectedPromise = SynchronousPromise.reject(expected).pause(),
+        capturedA = null,
+        capturedB = null;
+
+      pausedRejectedPromise.catch(function (e) {
+        capturedA = e;
+        // prove that this works even from an async promise
+        return Promise.reject(e);
+      }).catch(function (e) {
+        capturedB = e;
+      })
+
+      // Act
+      pausedRejectedPromise.resume();
+
+      // Assert
+      setTimeout(function () {
+        expect(capturedA).to.equal(expected);
+        expect(capturedB).to.equal(expected);
+        done();
+      }, 100);
+    });
+
+    it("should continue if a catch handler returns a resolved promise", function (done) {
+      // Arrange
+      var
+        expected = "123",
+        pausedRejectedPromise = SynchronousPromise.reject(expected).pause(),
+        capturedA = null,
+        capturedB = null,
+        secondResolve;
+
+      pausedRejectedPromise.catch(function (e) {
+        capturedA = e;
+        // prove that this works even from an async promise
+        return Promise.resolve("456");
+      }).catch(function (e) {
+        capturedB = e;
+      }).then(function(data) {
+        secondResolve = data;
+      });
+
+      // Act
+      pausedRejectedPromise.resume();
+
+      // Assert
+      setTimeout(function () {
+        expect(capturedA).to.equal(expected);
+        expect(capturedB).to.be.null;
+        expect(secondResolve).to.equal("456");
+        done();
+      }, 100);
+    });
+
   });
   describe("prototype pause", function () {
     it("should exist as a function on the prototype", function () {
@@ -523,14 +582,14 @@ describe("synchronous-promise", function () {
           expect(sut.resolve).to.exist;
           expect(sut.resolve).to.be.a("function");
         });
-        it("should resolve the promise when invoked", function() {
+        it("should resolve the promise when invoked", function () {
           // Arrange
           var
             resolved = undefined,
             error = undefined,
-            sut = SynchronousPromise.unresolved().then(function(result) {
+            sut = SynchronousPromise.unresolved().then(function (result) {
               resolved = result;
-            }).catch(function(err) {
+            }).catch(function (err) {
               error = err;
             }),
             expected = { key: "value" };
@@ -550,14 +609,14 @@ describe("synchronous-promise", function () {
           expect(sut.reject).to.exist;
           expect(sut.reject).to.be.a("function");
         });
-        it("should reject the promise when invoked", function() {
+        it("should reject the promise when invoked", function () {
           // Arrange
           var
             resolved = undefined,
             error = undefined,
-            sut = SynchronousPromise.unresolved().then(function(result) {
+            sut = SynchronousPromise.unresolved().then(function (result) {
               resolved = result;
-            }).catch(function(err) {
+            }).catch(function (err) {
               error = err;
             }),
             expected = { key: "value" };
