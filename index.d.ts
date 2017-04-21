@@ -62,5 +62,21 @@ export interface SynchronousPromiseConstructor {
     */
   resolve(): SynchronousPromise<void>;
 
+  /**
+   * Creates a new unresolved promise with the `resolve` and `reject` methods exposed
+   * @returns An unresolved promise with the `resolve` and `reject` methods exposed
+   */
+  unresolved<T>(): UnresolvedSynchronousPromise<T>;
+
 }
+
+/**
+ * Interface type only exposed when using the static unresolved() convenience method
+ */
+interface UnresolvedSynchronousPromise<T> extends SynchronousPromise<T>  {
+  resolve<T>(data: T): void;
+  resolve(): void;
+  reject<T>(data: T): void;
+}
+
 export var SynchronousPromise: SynchronousPromiseConstructor;
