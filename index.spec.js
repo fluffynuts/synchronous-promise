@@ -199,6 +199,19 @@ describe("synchronous-promise", function () {
       })
       expect(captured).to.equal(expected);
     });
+    it("should call handler if the promise resolves", function () {
+      // Arrange
+      var
+        sut = SynchronousPromise.unresolved(),
+        resolved = false,
+        caught = false;
+      // Act
+      sut.then(() => resolved = true).catch(() => caught = true);
+      sut.resolve();
+      // Assert
+      expect(resolved).to.be.true;
+      expect(caught).to.be.false;
+    });
     it("should be called on a delayed rejection", function () {
       var
         providedReject = null,
@@ -629,4 +642,4 @@ describe("synchronous-promise", function () {
       });
     });
   });
-})
+});
