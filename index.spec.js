@@ -66,7 +66,7 @@ describe("synchronous-promise", function () {
 
       expect(received).to.eql(new Error(expected));
     });
-    it("should call into the failure function when the predecessor fails", function () {
+    it("should call into following catch rather than the sibling onRejected if onResolved fails", function () {
       var
         sut = createResolved(),
         expected = "the error",
@@ -80,8 +80,8 @@ describe("synchronous-promise", function () {
         catchCaptured = e;
       });
 
-      expect(captured).to.equal(expected);
-      expect(catchCaptured).to.be.null;
+      expect(captured).to.be.null;
+      expect(catchCaptured).to.equal(expected);
     });
     it("should bring the first resolve value into the first then", function () {
       var
