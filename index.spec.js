@@ -446,6 +446,34 @@ describe("synchronous-promise", function () {
         promise.resume();
         expect(captured).to.equal("moo");
       });
+      it("should return a promise in paused state with no initial data and being rejected on resume", function () {
+        var
+          captured,
+          expected = new Error("moon"),
+          promise = SynchronousPromise.resolve().pause().then(function () {
+            throw expected
+          }).catch(function (e) {
+            captured = e;
+          });
+        expect(captured).not.to.be.defined;
+        promise.resume();
+        expect(captured).to.equal(expected);
+      });
+      it("should return a promise in paused state with no initial data and being resolved after a catch on resume", function () {
+        var
+          captured,
+          error = new Error("moon"),
+          promise = SynchronousPromise.resolve().pause().then(function () {
+            throw error
+          }).catch(function (e) {
+            return e.message;
+          }).then(function (m) {
+            captured = m;
+          });
+        expect(captured).not.to.be.defined;
+        promise.resume();
+        expect(captured).to.equal("moon");
+      });
     });
   });
   describe("resume", function () {
