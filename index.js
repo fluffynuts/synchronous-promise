@@ -3,27 +3,47 @@ function argumentsToArray(args) {
   return Array.prototype.slice.apply(args);
 }
 
+function looksLikePromise(thing) {
+  return thing &&
+    thing.then &&
+    typeof (thing.then) === "function" &&
+    typeof (thing.catch) === "function";
+}
+
 function SynchronousPromise(ctorFunction) {
   this.status = "pending";
-  this._next = [];
-  this._catchFunctions = [];
   this._paused = false;
+  this._next = [];
+  this._data = [];
   this._runConstructorFunction(ctorFunction);
 }
+
 SynchronousPromise.prototype = {
   then: function (next, fail) {
     this._next.push([next, fail]);
-    if (this.status === "resolved") {
-      this._applyNext();
+
+    // Pending is when the Promise is constructed with the constructor function
+    // and the resolve nor reject handler have been executed
+    if (this.status === "pending") {
+      return this;
     }
-    return this;
+
+    if (this.status === "resolved") {
+      return this._applyNext();
+    }
+
+    return this._applyCatch();
   },
   catch: function (fn) {
-    this._catchFunctions.push(fn);
-    if (this.status === "rejected") {
-      this._applyCatch();
+    this._next.push([undefined, fn]);
+
+    // Pending is when the Promise is constructed with the constructor function
+    // and the resolve nor reject handler have been executed
+    if (this.status === "pending") {
+      return this;
     }
-    return this;
+
+    return this._applyCatch();
   },
   pause: function () {
     this._paused = true;
@@ -31,38 +51,35 @@ SynchronousPromise.prototype = {
   },
   resume: function () {
     this._paused = false;
-    var self = this;
-    this._applyCatch().then(function () {
-      self._applyNext();
-    });
-    return this;
+    return this._applyNext();
   },
   _runConstructorFunction: function (ctorFunction) {
     var self = this;
-    var doCatch = function (args) {
-      self._catchData = argumentsToArray(args);
-      self._setRejected();
-      self._applyCatch();
-    };
-    ctorFunction(function () {
-      self._data = argumentsToArray(arguments);
-      var doResolve = function () {
-        self._setResolved();
-        self._applyNext();
-      };
-      if (self._looksLikePromise(self._data[0])) {
-        self._data[0].then(function () {
-          self._data = argumentsToArray(arguments);
-          doResolve();
-        }).catch(function () {
-          doCatch(arguments);
-        });
-      } else {
-        doResolve();
+
+    this._next.push([
+      function (r) { return r; },
+      function (err) { throw err; }
+    ]);
+
+    var isRun = false;
+    ctorFunction(function (result) {
+      if (isRun) {
+        return;
       }
-    }, function () {
+
+      isRun = true;
+      self._setResolved();
+      self._data = [result];
+      self._applyNext();
+    }, function (err) {
+      if (isRun) {
+        return;
+      }
+
+      isRun = true;
       self._setRejected();
-      doCatch(arguments);
+      self._data = [err];
+      self._applyCatch();
     });
   },
   _setRejected: function () {
@@ -71,83 +88,115 @@ SynchronousPromise.prototype = {
   _setResolved: function () {
     this.status = "resolved";
   },
-  _applyNext: function () {
-    if (this._next.length === 0 || this._paused) {
-      return;
-    }
-    var next = this._next.shift();
-    try {
-      if (!next) {
-        return;
-      }
-      var data = next[0].apply(null, this._data),
-        self = this;
-      if (this._looksLikePromise(data)) {
-        data.then(function () {
-          self._data = Array.prototype.slice.apply(arguments);
-          self._applyNext();
-        }).catch(function (e) {
-          throw e;
-        });
-      } else {
-        this._data = [data];
-        this._applyNext();
-      }
-    } catch (e) {
-      this._next = [];
-      this._data = undefined;
-      if (next[1]) {
-        try { next[1](e); } catch (ignore) { }
-      } else {
-        this._catchData = [e];
-        this._setRejected();
-        this._applyCatch();
-      }
-    }
+  _setPending: function () {
+    this.status = "pending";
   },
-  _looksLikePromise: function (thing) {
-    return thing &&
-      thing.then &&
-      typeof (thing.then) === "function";
+  _applyNext: function () {
+    if (this.status === "rejected") {
+      return this._applyCatch();
+    }
+
+    if (this._next.length === 0 || this._paused) {
+      return this;
+    }
+
+    var next;
+    // Look for the first onResolvedHandler function
+    while (!next && this._next.length > 0) {
+      next = this._next.shift()[0];
+    }
+
+    if (!next) {
+      return this;
+    }
+
+    try {
+      var data = next.apply(null, this._data);
+
+      this._setResolved();
+      if (looksLikePromise(data)) {
+        this._handleNestedPromise(data);
+        return this;
+      }
+
+      this._data = [data];
+      return this._applyNext();
+    } catch (e) {
+      this._setRejected();
+      this._data = [e];
+      return this._applyCatch();
+    }
   },
   _applyCatch: function () {
-    if (this._paused || this._catchFunctions.length === 0) {
-      return SynchronousPromise.resolve();
+    if (this.status === "resolved") {
+      return this._applyNext();
     }
-    var catchFunction = (this._catchFunctions || []).shift(),
-      catchData = this._catchData;
-    if (!(catchFunction && catchData)) {
-      return SynchronousPromise.resolve(); // nyom
+
+    if (this._next.length === 0 || this._paused) {
+      return this;
     }
-    var result = catchFunction.apply(null, catchData);
-    if (this._looksLikePromise(result)) {
-      var self = this;
-      result.then(function () {
-        self._data = Array.prototype.slice.apply(arguments);
-        self._setResolved();
-        self._applyNext();
-      }).catch(function () {
-        self._catchData = Array.prototype.slice.apply(arguments);
-        self._applyCatch();
-      });
-    } else {
+
+    var next;
+    // Look for the first onRejectedHandler function
+    while (!next && this._next.length > 0) {
+      next = this._next.shift()[1];
+    }
+
+    if (!next) {
+      return this;
+    }
+
+    try {
+      var data = next.apply(null, this._data);
+
+      if (looksLikePromise(data)) {
+        this._handleNestedPromise(data);
+        return this;
+      }
+
+      this._setResolved();
+      this._data = [data];
+      return this._applyNext();
+    } catch (e) {
       this._setRejected();
-      this._next = [];
-      this._data = undefined;
+      this._data = [e];
+      return this._applyCatch();
     }
-    return SynchronousPromise.reject();
   },
+  // Handle a promise which has been returned by one of the handler of this
+  // promise (onResolve or onReject handler)
+  _handleNestedPromise: function (promise) {
+    // Set this promise to pending until the nested one (provided by argument)
+    // ends.
+    this._setPending();
+    var self = this;
+    promise.then(function (d) {
+      self._setResolved();
+      self._data = [d];
+      self._applyNext();
+    }).catch(function (e) {
+      self._setRejected();
+      self._data = [e];
+      self._applyCatch();
+    });
+  }
 };
-SynchronousPromise.resolve = function () {
-  var args = arguments;
+SynchronousPromise.resolve = function (data) {
+  if (looksLikePromise(data)) {
+    return data;
+  }
+
   return new SynchronousPromise(function (resolve) {
-    resolve.apply(null, argumentsToArray(args));
+    resolve(data);
   });
 };
-SynchronousPromise.reject = function () {
-  var args = arguments;
+SynchronousPromise.reject = function (error) {
+  if (looksLikePromise(error)) {
+    return error;
+  }
+
   return new SynchronousPromise(function (resolve, reject) {
-    reject.apply(null, argumentsToArray(args));
+    reject(error);
   });
 };
 SynchronousPromise.all = function () {
@@ -197,3 +246,4 @@ SynchronousPromise.unresolved = function () {
 module.exports = {
   SynchronousPromise: SynchronousPromise
 };
+
