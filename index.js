@@ -22,9 +22,7 @@ SynchronousPromise.prototype = {
   then: function (next, fail) {
     this._next.push([next, fail]);
 
-    // Pending is when the Promise is constructed with the constructor function
-    // and the resolve nor reject handler have been executed
-    if (this.status === "pending") {
+    if (this._isPendingResolutionOrRejection()) {
       return this;
     }
 
@@ -37,9 +35,7 @@ SynchronousPromise.prototype = {
   catch: function (fn) {
     this._next.push([undefined, fn]);
 
-    // Pending is when the Promise is constructed with the constructor function
-    // and the resolve nor reject handler have been executed
-    if (this.status === "pending") {
+    if (this._isPendingResolutionOrRejection()) {
       return this;
     }
 
@@ -100,12 +96,7 @@ SynchronousPromise.prototype = {
       return this;
     }
 
-    var next;
-    // Look for the first onResolvedHandler function
-    while (!next && this._next.length > 0) {
-      next = this._next.shift()[0];
-    }
-
+    var next =  this._findFirstResolutionHandler();
     if (!next) {
       return this;
     }
@@ -136,12 +127,7 @@ SynchronousPromise.prototype = {
       return this;
     }
 
-    var next;
-    // Look for the first onRejectedHandler function
-    while (!next && this._next.length > 0) {
-      next = this._next.shift()[1];
-    }
-
+    var next =  this._findFirstRejectionHandler();
     if (!next) {
       return this;
     }
@@ -163,11 +149,7 @@ SynchronousPromise.prototype = {
       return this._applyCatch();
     }
   },
-  // Handle a promise which has been returned by one of the handler of this
-  // promise (onResolve or onReject handler)
   _handleNestedPromise: function (promise) {
-    // Set this promise to pending until the nested one (provided by argument)
-    // ends.
     this._setPending();
     var self = this;
     promise.then(function (d) {
@@ -179,6 +161,25 @@ SynchronousPromise.prototype = {
       self._data = [e];
       self._applyCatch();
     });
+  },
+  _isPendingResolutionOrRejection: function () {
+    return this.status === "pending";
+  },
+  _findFirstResolutionHandler: function () {
+    var next;
+    while (!next && this._next.length > 0) {
+      next = this._next.shift()[0];
+    }
+
+    return next;
+  },
+  _findFirstRejectionHandler: function () {
+    var next;
+    while (!next && this._next.length > 0) {
+      next = this._next.shift()[1];
+    }
+
+    return next;
   }
 };
 SynchronousPromise.resolve = function (data) {
