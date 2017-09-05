@@ -323,9 +323,13 @@ describe("synchronous-promise", function () {
 
       // Assert
       setTimeout(function () {
-        expect(capturedA).to.equal(expected);
-        expect(capturedB).to.equal(expected);
-        done();
+        try {
+          expect(capturedA).to.equal(expected);
+          expect(capturedB).to.equal(expected);
+          done();
+        } catch (e) {
+          done(e);
+        }
       }, 100);
     });
 
@@ -382,10 +386,14 @@ describe("synchronous-promise", function () {
 
       // Assert
       setTimeout(function () {
-        expect(capturedA).to.equal(expected);
-        expect(capturedB).to.be.null;
-        expect(secondResolve).to.equal("456");
-        done();
+        try {
+          expect(capturedA).to.equal(expected);
+          expect(capturedB).to.be.null;
+          expect(secondResolve).to.equal("456");
+          done();
+        } catch (e) {
+          done(e);
+        }
       }, 100);
     });
 
