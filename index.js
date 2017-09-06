@@ -88,22 +88,15 @@ SynchronousPromise.prototype = {
       return this;
     }
 
-    var next;
-    switch (this.status) {
-    case "resolved":
-      next =  this._findFirstResolutionHandler();
-      break;
-    case "rejected":
-      next =  this._findFirstRejectionHandler();
-      break;
-    }
-
+    var next = this._findNext();
     if (!next) {
       return this;
     }
-
+    return this._applyNextHandler(next);
+  },
+  _applyNextHandler: function (handler) {
     try {
-      var data = next.apply(null, this._data);
+      var data = handler.apply(null, this._data);
 
       if (looksLikePromise(data)) {
         this._handleNestedPromise(data);
@@ -118,6 +111,13 @@ SynchronousPromise.prototype = {
       this._data = [e];
       return this._applyNext();
     }
+  },
+  _findNext: function () {
+    var handler = {
+      "resolved": this._findFirstResolutionHandler,
+      "rejected": this._findFirstRejectionHandler
+    }[this.status];
+    return handler ? handler.apply(this) : undefined;
   },
   _handleNestedPromise: function (promise) {
     this._setPending();
