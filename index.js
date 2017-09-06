@@ -26,11 +26,7 @@ SynchronousPromise.prototype = {
       return this;
     }
 
-    if (this.status === "resolved") {
-      return this._applyNext();
-    }
-
-    return this._applyCatch();
+    return this._applyNext();
   },
   catch: function (fn) {
     this._next.push([undefined, fn]);
@@ -39,7 +35,7 @@ SynchronousPromise.prototype = {
       return this;
     }
 
-    return this._applyCatch();
+    return this._applyNext();
   },
   pause: function () {
     this._paused = true;
@@ -75,7 +71,7 @@ SynchronousPromise.prototype = {
       isRun = true;
       self._setRejected();
       self._data = [err];
-      self._applyCatch();
+      self._applyNext();
     });
   },
   _setRejected: function () {
@@ -88,46 +84,20 @@ SynchronousPromise.prototype = {
     this.status = "pending";
   },
   _applyNext: function () {
-    if (this.status === "rejected") {
-      return this._applyCatch();
-    }
-
     if (this._next.length === 0 || this._paused) {
       return this;
     }
 
-    var next =  this._findFirstResolutionHandler();
-    if (!next) {
-      return this;
+    var next;
+    switch (this.status) {
+    case "resolved":
+      next =  this._findFirstResolutionHandler();
+      break;
+    case "rejected":
+      next =  this._findFirstRejectionHandler();
+      break;
     }
 
-    try {
-      var data = next.apply(null, this._data);
-
-      this._setResolved();
-      if (looksLikePromise(data)) {
-        this._handleNestedPromise(data);
-        return this;
-      }
-
-      this._data = [data];
-      return this._applyNext();
-    } catch (e) {
-      this._setRejected();
-      this._data = [e];
-      return this._applyCatch();
-    }
-  },
-  _applyCatch: function () {
-    if (this.status === "resolved") {
-      return this._applyNext();
-    }
-
-    if (this._next.length === 0 || this._paused) {
-      return this;
-    }
-
-    var next =  this._findFirstRejectionHandler();
     if (!next) {
       return this;
     }
@@ -146,7 +116,7 @@ SynchronousPromise.prototype = {
     } catch (e) {
       this._setRejected();
       this._data = [e];
-      return this._applyCatch();
+      return this._applyNext();
     }
   },
   _handleNestedPromise: function (promise) {
@@ -159,7 +129,7 @@ SynchronousPromise.prototype = {
     }).catch(function (e) {
       self._setRejected();
       self._data = [e];
-      self._applyCatch();
+      self._applyNext();
     });
   },
   _isPendingResolutionOrRejection: function () {
