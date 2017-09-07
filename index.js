@@ -113,10 +113,12 @@ SynchronousPromise.prototype = {
     }
   },
   _findNext: function () {
-    var handler = {
-      "resolved": this._findFirstResolutionHandler,
-      "rejected": this._findFirstRejectionHandler
-    }[this.status];
+    if (this._isPendingResolutionOrRejection()) {
+      return undefined;
+    }
+    var handler = this.status === "resolved"
+          ? this._findFirstResolutionHandler
+          : this._findFirstRejectionHandler;
     return handler ? handler.apply(this) : undefined;
   },
   _handleNestedPromise: function (promise) {
