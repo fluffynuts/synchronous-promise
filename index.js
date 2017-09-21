@@ -177,6 +177,9 @@ SynchronousPromise.all = function () {
   if (Array.isArray(args[0])) {
     args = args[0];
   }
+  if (!args.length) {
+    return SynchronousPromise.resolve([]);
+  }
   return new SynchronousPromise(function (resolve, reject) {
     var
       allData = [],

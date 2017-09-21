@@ -613,6 +613,17 @@ describe("synchronous-promise", function () {
       expect(captured).to.contain("abc");
       expect(captured).to.contain("123");
     });
+    it("should resolve empty promise array", function () {
+      var
+        all = SynchronousPromise.all([]),
+        captured = null;
+
+      all.then(function (data) {
+        captured = data;
+      });
+
+      expect(captured).to.have.length(0);
+    });
     it("should resolve with values in the correct order", function () {
       var
         resolve1,
