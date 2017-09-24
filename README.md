@@ -1,9 +1,12 @@
 # synchronous-promise
 TL;DR: A prototypical animal which looks like an A+ Promise but doesn't defer
-immediately, so can run synchronously, for testing.
+immediately, so can run synchronously, for testing. Technically, this makes it
+*not* A+ compliant, since part of the A+ spec is that resolution be asynchronous.
+
+This means that I unfortunately can't run the official tests at [https://github.com/promises-aplus/promises-tests](https://github.com/promises-aplus/promises-tests). As such, I rely on issue reports from users and welcome contributions.
 
 ### Why?
-The standard ES6 Promise (and many others) push the promise logic to the background
+The standard ES6 Promise (and any others which *are* A+ compliant) push the promise logic to the background
 immediately, departing from the mechanisms employed in years past by promise
 implementations in libraries such as jQuery and Q.
 
@@ -142,7 +145,8 @@ SynchronousPromise.resolve('foo');  // creates an already-resolved promise
 SynchronousPromise.reject('bar'); // creats an already-rejected promise
 ```
 
-(`race()` isn't because I haven't determined a good strategy for that yet -- but it's
+(`race()` isn't because I haven't determined a good strategy for that yet, 
+considering the synchronous design goal -- but it's
 unlikely you'll need `race()` from a test).
 
 ### Extras
@@ -217,6 +221,7 @@ The `synchronous-promise` package includes an `index.d.ts`. To install, run:
 ```
 typings install npm:synchronous-promise --save
 ```
+*On any modern TypeScript (v2+), you shouldn't need to do this.*
 
 ### Production code
 The main aim of SynchronousPromise is to facilitate easier testing. That being
@@ -226,6 +231,8 @@ always-backgrounded behaviour. One might be tempted to just use it everywhere.
 **However**: I'd highly recommend using *any* of the more venerable promise implementations
 instead of SynchronousPromise in your production code -- preferably the vanilla
 ES6 Promise, where possible (or the shim, where you're in ES5). Or Q.
-Or jQUery.Deferred(). Basically, this seems to work quite well for testing and
+Or jQUery.Deferred(), Bluebird or any of the implementations at [https://promisesaplus.com/implementations](https://promisesaplus.com/implementations). 
+
+Basically, this seems to work quite well for testing and
 I've tried to implement every behaviour I'd expect from a promise -- but I'm
 pretty sure that a native `Promise` will be better for production code any day. 
