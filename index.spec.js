@@ -1,4 +1,4 @@
-/* 
+/*
 * linting omitted on spec mainly because jslint doesn"t seem to allow the
 * mocha expression-like syntax
 */
@@ -588,6 +588,20 @@ describe("synchronous-promise", function () {
         p1 = createResolved("abc"),
         p2 = createResolved("123"),
         all = SynchronousPromise.all(p1, p2),
+        captured = null;
+
+      all.then(function (data) {
+        captured = data;
+      });
+
+      expect(captured).to.have.length(2);
+      expect(captured).to.contain("abc");
+      expect(captured).to.contain("123");
+    });
+
+    it("should resolve with all values from given promise or none promise variable args", function () {
+      var
+        all = SynchronousPromise.all(["123", createResolved("abc")]),
         captured = null;
 
       all.then(function (data) {
