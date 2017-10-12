@@ -198,7 +198,7 @@ SynchronousPromise.all = function () {
         reject(err);
       };
     args.forEach(function (arg, idx) {
-      arg.then(function (thisResult) {
+      SynchronousPromise.resolve(arg).then(function (thisResult) {
         allData[idx] = thisResult;
         numResolved += 1;
         doResolve();
