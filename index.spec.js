@@ -64,7 +64,7 @@ describe("synchronous-promise", function () {
         received = err;
       });
 
-      expect(received.message).to.eql(expected);
+      expect(received.message).to.equal(expected);
     });
     it("should call into following catch rather than the sibling onRejected if onResolved fails", function () {
       var
@@ -208,16 +208,6 @@ describe("synchronous-promise", function () {
       expect(providedResolve).to.be.a("function");
       providedResolve(expected)
       expect(captured).to.equal(expected);
-    });
-    it("should not continue after an error", () => {
-      // Arrange
-      var continued = false;
-      // Act
-      SynchronousPromise.resolve("a")
-        .then(() => { throw new Error("derp"); })
-        .then(() => continued = true);
-      // Assert
-      expect(continued).to.be.false;
     });
   });
   describe("catch", function () {
