@@ -54,7 +54,7 @@ SynchronousPromise.prototype = {
     ]);
 
     var isRun = false;
-    ctorFunction(function (result) {
+    ctorFunction.call(this, function (result) {
       if (isRun) {
         return;
       }

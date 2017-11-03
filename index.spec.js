@@ -64,7 +64,7 @@ describe("synchronous-promise", function () {
         received = err;
       });
 
-      expect(received).to.eql(new Error(expected));
+      expect(received.message).to.eql(expected);
     });
     it("should call into following catch rather than the sibling onRejected if onResolved fails", function () {
       var
@@ -450,7 +450,7 @@ describe("synchronous-promise", function () {
           }).then(function (data) {
             captured = data;
           });
-        expect(captured).not.to.be.defined;
+        expect(captured).to.be.undefined;
         promise.resume();
         expect(captured).to.equal("moo");
       });
@@ -463,7 +463,7 @@ describe("synchronous-promise", function () {
           }).catch(function (e) {
             captured = e;
           });
-        expect(captured).not.to.be.defined;
+        expect(captured).to.be.undefined;
         promise.resume();
         expect(captured).to.equal(expected);
       });
@@ -478,7 +478,7 @@ describe("synchronous-promise", function () {
           }).then(function (m) {
             captured = m;
           });
-        expect(captured).not.to.be.defined;
+        expect(captured).to.be.undefined;
         promise.resume();
         expect(captured).to.equal("moon");
       });

@@ -23,13 +23,13 @@
   "license": "BSD-3-Clause",
   "devDependencies": {
     "browserify": "^14.1.0",
-    "chai": "^3.5.0",
-    "jslint": "^0.10.1",
+    "chai": "^4.1.2",
+    "jslint": "^0.11.0",
     "mkdirp": "^0.5.1",
-    "mocha": "^2.5.3",
+    "mocha": "^4.0.1",
     "mocha-yar": "^1.0.10",
     "nodemon": "^1.10.2",
-    "npm-run-all": "^2.3.0",
-    "run-sequence": "^1.2.2"
+    "npm-run-all": "^4.1.1",
+    "run-sequence": "^2.2.0"
   }
 }
