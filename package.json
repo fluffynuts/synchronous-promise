@@ -17,7 +17,8 @@
     "test": "mocha index.spec.js",
     "predist": "mkdirp dist",
     "dist": "browserify browser.js -o dist/synchronous-promise.js",
-    "prepublish": "run-s -s test dist"
+    "prepublish": "run-s -s test dist",
+    "debug": "mocha *.spec.js --reporter mocha-yar --debug-brk --inspect"
   },
   "author": "Davyd McColl <davydm@gmail.com> (https://github.com/fluffynuts)",
   "license": "BSD-3-Clause",
