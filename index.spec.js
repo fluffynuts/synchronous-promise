@@ -209,6 +209,16 @@ describe("synchronous-promise", function () {
       providedResolve(expected)
       expect(captured).to.equal(expected);
     });
+    it("should not continue after an error", () => {
+      // Arrange
+      var continued = false;
+      // Act
+      SynchronousPromise.resolve("a")
+        .then(() => { throw new Error("derp"); })
+        .then(() => continued = true);
+      // Assert
+      expect(continued).to.be.false;
+    });
   });
   describe("catch", function () {
     it("should be called if the initial reject is called", function () {
