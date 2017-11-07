@@ -7,6 +7,7 @@
   function SynchronousPromise(handler) {
     this._state = "pending";
     this._continuations = [];
+    this._parent = null;
     if (handler) {
       handler.call(
         this,
@@ -27,23 +28,23 @@
           try {
             var catchResult = catchFn(this._error);
             if (looksLikeAPromise(catchResult)) {
-              var next = SynchronousPromise.unresolved();
-              catchResult.then(function(newData) {
+              var next = SynchronousPromise.unresolved()._setParent(this);
+              catchResult.then(function (newData) {
                 next.resolve(newData);
-              }).catch(function(newError) {
+              }).catch(function (newError) {
                 next.reject(newError);
               });
               return next;
             } else {
-              return SynchronousPromise.resolve(catchResult);
+              return SynchronousPromise.resolve(catchResult)._setParent(this);
             }
           } catch (e) {
-            return SynchronousPromise.reject(e);
+            return SynchronousPromise.reject(e)._setParent(this);
           }
         }
-        return SynchronousPromise.reject(this._error);
+        return SynchronousPromise.reject(this._error)._setParent(this);
       }
-      var next = SynchronousPromise.unresolved();
+      var next = SynchronousPromise.unresolved()._setParent(this);
       this._continuations.push({
         promise: next,
         nextFn: nextFn,
@@ -54,9 +55,9 @@
     },
     catch: function (handler) {
       if (this._isResolved()) {
-        return SynchronousPromise.resolve(this._data);
+        return SynchronousPromise.resolve(this._data)._setParent(this);
       }
-      var next = SynchronousPromise.unresolved();
+      var next = SynchronousPromise.unresolved()._setParent(this);
       this._continuations.push({
         promise: next,
         catchFn: handler
@@ -69,9 +70,30 @@
       return this;
     },
     resume: function () {
-      this._paused = false;
-      this._runResolutions();
-      this._runRejections();
+      var firstPaused = this._findFirstPaused();
+      if (firstPaused) {
+        firstPaused._paused = false;
+        firstPaused._runResolutions();
+        firstPaused._runRejections();
+      }
+      return this;
+    },
+    _findFirstPaused() {
+      var test = this;
+      var result = null;
+      while (test) {
+        if (test._paused) {
+          result = test;
+        }
+        test = test._parent;
+      }
+      return result;
+    },
+    _setParent(parent) {
+      if (this._parent) {
+        throw new Error("parent already set");
+      }
+      this._parent = parent;
       return this;
     },
     _continueWith: function (data) {
@@ -86,7 +108,7 @@
       return this._continuations.splice(0, this._continuations.length);
     },
     _runRejections: function () {
-      if (!this._isRejected()) {
+      if (this._paused || !this._isRejected()) {
         return;
       }
       var error = this._error;
@@ -95,9 +117,9 @@
         if (cont.catchFn) {
           var catchResult = cont.catchFn(error);
           if (looksLikeAPromise(catchResult)) {
-            catchResult.then(function(newData) {
+            catchResult.then(function (newData) {
               cont.promise.resolve(newData);
-            }).catch(function(newError) {
+            }).catch(function (newError) {
               cont.promise.reject(newError);
             });
           } else {
@@ -110,7 +132,7 @@
       });
     },
     _runResolutions: function () {
-      if (!this._isResolved()) {
+      if (this._paused || !this._isResolved()) {
         return;
       }
       var continuations = this._takeContinuations();

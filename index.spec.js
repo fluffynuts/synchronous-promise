@@ -138,7 +138,6 @@ describe("synchronous-promise", function () {
         initial = createResolved("123"),
         captured = null;
       createResolved(initial).then(function (data) {
-        console.log("runddning test then");
         captured = data;
       });
       expect(captured).to.equal("123");
@@ -432,19 +431,18 @@ describe("synchronous-promise", function () {
         }
       }, 100);
     });
-
   });
   describe("prototype pause", function () {
-    it.skip("should exist as a function on the prototype", function () {
+    it("should exist as a function on the prototype", function () {
       expect(SynchronousPromise.prototype.pause).to.be.a("function");
     });
-    it.skip("should return the promise", function () {
+    it("should return the promise", function () {
       const
         promise = createResolved("123"),
         result = promise.pause();
       expect(result).to.equal(promise);
     });
-    it.skip("should prevent resolution from continuing at that point", function () {
+    it("should prevent resolution from continuing at that point", function () {
       var calls = 0;
       createResolved("123").then(function () {
         return calls++;
@@ -453,14 +451,14 @@ describe("synchronous-promise", function () {
       });
       expect(calls).to.equal(1);
     });
-    it.skip("should prevent rejection from being caught at that point", function () {
+    it("should prevent rejection from being caught at that point", function () {
       var calls = 0;
       createRejected("123").pause().catch(function (e) {
         calls++;
       })
       expect(calls).to.equal(0);
     });
-    it.skip("should prevent rejection from continuing past at that point", function () {
+    it("should prevent rejection from continuing past at that point", function () {
       var
         calls = 0,
         captured = null;
@@ -478,7 +476,7 @@ describe("synchronous-promise", function () {
       expect(calls).to.equal(0);
     })
     describe("starting paused", function () {
-      it.skip("should return a promise in paused state with no initial data and being resolved on resume", function () {
+      it("should return a promise in paused state with no initial data and being resolved on resume", function () {
         var
           captured,
           promise = SynchronousPromise.resolve().pause().then(function () {
