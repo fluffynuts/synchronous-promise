@@ -1,7 +1,10 @@
 (function (win) {
   "use strict";
+  function makeArrayFrom(obj) {
+    return Array.prototype.slice.apply(obj);
+  }
   function log() {
-    console.log((new Date()).getTime(), Array.from(arguments));
+    console.log((new Date()).getTime(), makeArrayFrom(arguments));
   }
 
   function SynchronousPromise(handler) {
@@ -24,6 +27,15 @@
   SynchronousPromise.prototype = {
     then: function (nextFn, catchFn) {
       if (this._isRejected()) {
+        if (this._paused) {
+          var next = SynchronousPromise.unresolved()._setParent(this);
+          this._continuations.push({
+            promise: next,
+            nextFn: nextFn,
+            catchFn: catchFn
+          });
+          return next;
+        }
         if (catchFn) {
           try {
             var catchResult = catchFn(this._error);
@@ -97,12 +109,29 @@
       return this;
     },
     _continueWith: function (data) {
-      this._data = data;
-      this._setResolved();
+      var firstPending = this._findFirstPending();
+      if (firstPending) {
+        firstPending._data = data;
+        firstPending._setResolved();
+      }
+    },
+    _findFirstPending: function () {
+      var test = this;
+      var result;
+      while (test) {
+        if (test._isPending()) {
+          result = test;
+        }
+        test = test._parent;
+      }
+      return result;
     },
     _failWith: function (error) {
-      this._error = error;
-      this._setRejected();
+      var firstRejected = this._findFirstPending();
+      if (firstRejected) {
+        firstRejected._error = error;
+        firstRejected._setRejected();
+      }
     },
     _takeContinuations: function () {
       return this._continuations.splice(0, this._continuations.length);
@@ -126,7 +155,6 @@
             cont.promise.resolve(catchResult);
           }
         } else {
-          console.log("passing rejection down");
           cont.promise.reject(error);
         }
       });
@@ -205,7 +233,15 @@
 
   SynchronousPromise.resolve = function (result) {
     return new SynchronousPromise(function (resolve, reject) {
-      resolve(result);
+      if (looksLikeAPromise(result)) {
+        result.then(function (newResult) {
+          resolve(newResult);
+        }).catch(function (error) {
+          reject(error);
+        });
+      } else {
+        resolve(result);
+      }
     });
   };
 
@@ -219,6 +255,43 @@
     return new SynchronousPromise(function (resolve, reject) {
       this.resolve = resolve;
       this.reject = reject;
+    });
+  };
+
+  SynchronousPromise.all = function () {
+    var args = makeArrayFrom(arguments);
+    if (Array.isArray(args[0])) {
+      args = args[0];
+    }
+    if (!args.length) {
+      return SynchronousPromise.resolve([]);
+    }
+    return new SynchronousPromise(function (resolve, reject) {
+      var
+        allData = [],
+        numResolved = 0,
+        doResolve = function () {
+          if (numResolved === args.length) {
+            resolve(allData);
+          }
+        },
+        rejected = false,
+        doReject = function (err) {
+          if (rejected) {
+            return;
+          }
+          rejected = true;
+          reject(err);
+        };
+      args.forEach(function (arg, idx) {
+        SynchronousPromise.resolve(arg).then(function (thisResult) {
+          allData[idx] = thisResult;
+          numResolved += 1;
+          doResolve();
+        }).catch(function (err) {
+          doReject(err);
+        });
+      });
     });
   };
 

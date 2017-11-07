@@ -310,7 +310,6 @@ describe("synchronous-promise", function () {
         expected = new Error("123"),
         notExpected = new Error("Not expected"),
         capturedError = null;
-        debugger;
       createRejected(expected).then(
         function () { },
         function (e) {
@@ -408,7 +407,6 @@ describe("synchronous-promise", function () {
       pausedRejectedPromise.catch(function (e) {
         capturedA = e;
         // prove that this works even from an async promise
-        debugger;
         return Promise.resolve("456");
       }).catch(function (e) {
         capturedB = e;
@@ -488,7 +486,7 @@ describe("synchronous-promise", function () {
         promise.resume();
         expect(captured).to.equal("moo");
       });
-      it.skip("should return a promise in paused state with no initial data and being rejected on resume", function () {
+      it("should return a promise in paused state with no initial data and being rejected on resume", function () {
         var
           captured,
           expected = new Error("moon"),
@@ -501,7 +499,7 @@ describe("synchronous-promise", function () {
         promise.resume();
         expect(captured).to.equal(expected);
       });
-      it.skip("should return a promise in paused state with no initial data and being resolved after a catch on resume", function () {
+      it("should return a promise in paused state with no initial data and being resolved after a catch on resume", function () {
         var
           captured,
           error = new Error("moon"),
@@ -519,22 +517,22 @@ describe("synchronous-promise", function () {
     });
   });
   describe("resume", function () {
-    it.skip("should exist as a function on the prototype", function () {
+    it("should exist as a function on the prototype", function () {
       expect(SynchronousPromise.prototype.resume).to.be.a("function");
     });
-    it.skip("should return the promise", function () {
+    it("should return the promise", function () {
       var
         promise = createResolved("123").pause(),
         result = promise.resume();
       expect(result).to.equal(promise);
     });
-    it.skip("should not barf if the promise is not already paused", function () {
+    it("should not barf if the promise is not already paused", function () {
       var promise = createResolved("123");
       expect(function () {
         promise.resume();
       }).not.to.throw;
     })
-    it.skip("should resume resolution operations after the last pause", function () {
+    it("should resume resolution operations after the last pause", function () {
       var
         calls = 0,
         promise = createResolved("123").then(function () {
@@ -546,7 +544,7 @@ describe("synchronous-promise", function () {
       promise.resume();
       expect(calls).to.equal(2);
     });
-    it.skip("should resume rejection operations after the last pause", function () {
+    it("should resume rejection operations after the last pause", function () {
       var
         calls = 0,
         captured = null,
@@ -564,7 +562,7 @@ describe("synchronous-promise", function () {
       expect(calls).to.equal(0);
       expect(captured).to.equal(expected);
     });
-    it.skip("should resume a promise which was started rejected as rejected", function () {
+    it("should resume a promise which was started rejected as rejected", function () {
       var
         calls = 0,
         captured = null,
@@ -582,14 +580,14 @@ describe("synchronous-promise", function () {
     })
   })
   describe("static resolve", function () {
-    it.skip("should be a function", function () {
+    it("should be a function", function () {
       expect(SynchronousPromise.resolve).to.be.a("function");
     });
-    it.skip("should return a resolved promise", function () {
+    it("should return a resolved promise", function () {
       var
         expected = "foo",
         result = SynchronousPromise.resolve(expected);
-      expect(result.status).to.equal("resolved");
+      expect(result._state).to.equal("resolved");
       var captured = null;
       result.then(function (data) {
         captured = data;
@@ -598,14 +596,14 @@ describe("synchronous-promise", function () {
     })
   });
   describe("static reject", function () {
-    it.skip("should be a function", function () {
+    it("should be a function", function () {
       expect(SynchronousPromise.reject).to.be.a("function");
     });
-    it.skip("should return a rejected promise", function () {
+    it("should return a rejected promise", function () {
       var
         expected = "moo",
         result = SynchronousPromise.reject(expected);
-      expect(result.status).to.equal("rejected");
+      expect(result._state).to.equal("rejected");
       var captured = null;
       result.catch(function (err) {
         captured = err;
@@ -614,10 +612,10 @@ describe("synchronous-promise", function () {
     });
   });
   describe("static all", function () {
-    it.skip("should be a function", function () {
+    it("should be a function", function () {
       expect(SynchronousPromise.all).to.be.a("function")
     })
-    it.skip("should resolve with all values from given resolved promises as variable args", function () {
+    it("should resolve with all values from given resolved promises as variable args", function () {
       var
         p1 = createResolved("abc"),
         p2 = createResolved("123"),
@@ -633,7 +631,7 @@ describe("synchronous-promise", function () {
       expect(captured).to.contain("123");
     });
 
-    it.skip("should resolve with all values from given promise or none promise variable args", function () {
+    it("should resolve with all values from given promise or none promise variable args", function () {
       var
         all = SynchronousPromise.all(["123", createResolved("abc")]),
         captured = null;
@@ -646,7 +644,7 @@ describe("synchronous-promise", function () {
       expect(captured).to.contain("abc");
       expect(captured).to.contain("123");
     });
-    it.skip("should resolve with all values from given resolved promises as an array", function () {
+    it("should resolve with all values from given resolved promises as an array", function () {
       var
         p1 = createResolved("abc"),
         p2 = createResolved("123"),
@@ -661,7 +659,7 @@ describe("synchronous-promise", function () {
       expect(captured).to.contain("abc");
       expect(captured).to.contain("123");
     });
-    it.skip("should resolve empty promise array", function () {
+    it("should resolve empty promise array", function () {
       var
         all = SynchronousPromise.all([]),
         captured = null;
@@ -672,7 +670,7 @@ describe("synchronous-promise", function () {
 
       expect(captured).to.have.length(0);
     });
-    it.skip("should resolve with values in the correct order", function () {
+    it("should resolve with values in the correct order", function () {
       var
         resolve1,
         resolve2,
@@ -695,7 +693,7 @@ describe("synchronous-promise", function () {
 
       expect(captured).to.deep.equal(["b", "a"]);
     });
-    it.skip("should reject if any promise rejects", function () {
+    it("should reject if any promise rejects", function () {
       var
         p1 = createResolved("abc"),
         p2 = createRejected("123"),
@@ -712,14 +710,14 @@ describe("synchronous-promise", function () {
     });
   });
   describe("static unresolved", function () {
-    it.skip("should exist as a function", function () {
+    it("should exist as a function", function () {
       // Arrange
       // Act
       // Assert
       expect(SynchronousPromise.unresolved).to.exist;
       expect(SynchronousPromise.unresolved).to.be.a("function");
     });
-    it.skip("should return a new SynchronousPromise", function () {
+    it("should return a new SynchronousPromise", function () {
       // Arrange
       // Act
       var result1 = SynchronousPromise.unresolved(),
@@ -732,7 +730,7 @@ describe("synchronous-promise", function () {
       expect(result1).not.to.equal(result2);
     });
     describe("result", function () {
-      it.skip("should not be resolve or rejected", function () {
+      it("should not be resolved or rejected", function () {
         // Arrange
         var resolved = false,
           rejected = false;
@@ -746,8 +744,8 @@ describe("synchronous-promise", function () {
         expect(resolved).to.be.false;
         expect(rejected).to.be.false;
       });
-      describe("resolve property", function () {
-        it.skip("should be a function", function () {
+      describe("resolve", function () {
+        it("should be a function", function () {
           // Arrange
           // Act
           var sut = SynchronousPromise.unresolved();
@@ -755,7 +753,7 @@ describe("synchronous-promise", function () {
           expect(sut.resolve).to.exist;
           expect(sut.resolve).to.be.a("function");
         });
-        it.skip("should resolve the promise when invoked", function () {
+        it("should resolve the promise when invoked", function () {
           // Arrange
           var
             resolved = undefined,
@@ -767,6 +765,7 @@ describe("synchronous-promise", function () {
             }),
             expected = { key: "value" };
           // Act
+          debugger;
           sut.resolve(expected);
           // Assert
           expect(resolved).to.equal(expected);
@@ -774,7 +773,7 @@ describe("synchronous-promise", function () {
         });
       });
       describe("reject property", function () {
-        it.skip("should be a function", function () {
+        it("should be a function", function () {
           // Arrange
           // Act
           var sut = SynchronousPromise.unresolved();
@@ -782,7 +781,7 @@ describe("synchronous-promise", function () {
           expect(sut.reject).to.exist;
           expect(sut.reject).to.be.a("function");
         });
-        it.skip("should reject the promise when invoked", function () {
+        it("should reject the promise when invoked", function () {
           // Arrange
           var
             resolved = undefined,
