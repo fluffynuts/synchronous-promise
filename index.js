@@ -142,7 +142,7 @@
       }
       var error = this._error;
       var continuations = this._takeContinuations();
-      continuations.forEach(cont => {
+      continuations.forEach(function(cont) {
         if (cont.catchFn) {
           var catchResult = cont.catchFn(error);
           if (looksLikeAPromise(catchResult)) {
@@ -176,7 +176,8 @@
           self._runRejections();
         });
       }
-      continuations.forEach(cont => {
+      var self = this;
+      continuations.forEach(function(cont) {
         if (cont.nextFn) {
           try {
             var result = cont.nextFn(data);
@@ -190,7 +191,7 @@
               cont.promise.resolve(result);
             }
           } catch (e) {
-            this._setRejected();
+            self._setRejected();
             if (cont.catchFn) {
               try {
                 cont.catchFn(e);

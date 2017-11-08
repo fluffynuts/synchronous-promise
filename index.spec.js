@@ -240,6 +240,21 @@ describe("synchronous-promise", function () {
       providedResolve(expected)
       expect(captured).to.equal(expected);
     });
+
+    it("should resolve the same value from the same promise multiple times", () => {
+      // Arrange
+      var
+        expected = "multi-pass",
+        sut = SynchronousPromise.resolve(expected),
+        captured1,
+        captured2;
+      // Act
+      sut.then(result => captured1 = result);
+      sut.then(result => captured2 = result);
+      // Assert
+      expect(captured1).to.equal(expected);
+      expect(captured2).to.equal(expected);
+    });
   });
   describe("catch", function () {
     it("should be called if the initial reject is called", function () {
