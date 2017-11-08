@@ -6,9 +6,13 @@
   function log() {
     console.log((new Date()).getTime(), makeArrayFrom(arguments));
   }
+  var
+    PENDING = "pending",
+    RESOLVED = "resolved",
+    REJECTED = "rejected";
 
   function SynchronousPromise(handler) {
-    this.status = "pending";
+    this.status = PENDING;
     this._continuations = [];
     this._parent = null;
     this._paused = false;
@@ -42,11 +46,7 @@
             var catchResult = catchFn(this._error);
             if (looksLikeAPromise(catchResult)) {
               var next = SynchronousPromise.unresolved()._setParent(this);
-              catchResult.then(function (newData) {
-                next.resolve(newData);
-              }).catch(function (newError) {
-                next.reject(newError);
-              });
+              this._chainPromiseData(catchResult, next);
               return next;
             } else {
               return SynchronousPromise.resolve(catchResult)._setParent(this);
@@ -106,12 +106,12 @@
       }
     },
     _findFirstPending: function () {
-      return this._findFirstAncestor(function(test) {
+      return this._findFirstAncestor(function (test) {
         return test._isPending && test._isPending();
       });
     },
     _findFirstPaused() {
-      return this._findFirstAncestor(function(test) {
+      return this._findFirstAncestor(function (test) {
         return test._paused;
       });
     },
@@ -140,7 +140,7 @@
       if (this._paused || !this._isRejected()) {
         return;
       }
-      var 
+      var
         error = this._error,
         continuations = this._takeContinuations(),
         self = this;
@@ -151,20 +151,6 @@
         } else {
           cont.promise.reject(error);
         }
-      });
-    },
-    _handleUserFunctionResult(data, nextSynchronousPromise) {
-      if (looksLikeAPromise(data)) {
-        this._handlePromiseData(data, nextSynchronousPromise);
-      } else {
-        nextSynchronousPromise.resolve(data);
-      }
-    },
-    _handlePromiseData(promiseData, nextSynchronousPromise) {
-      promiseData.then(function(newData) {
-        nextSynchronousPromise.resolve(newData);
-      }).catch(function(newError) {
-        nextSynchronousPromise.reject(newError);
       });
     },
     _runResolutions: function () {
@@ -181,35 +167,30 @@
         if (cont.nextFn) {
           try {
             var result = cont.nextFn(data);
-            if (looksLikeAPromise(result)) {
-              result.then(function (pdata) {
-                cont.promise.resolve(pdata);
-              }).catch(function (error) {
-                cont.promise.reject(error);
-              });
-            } else {
-              cont.promise.resolve(result);
-            }
+            self._handleUserFunctionResult(result, cont.promise);
           } catch (e) {
-            self._setRejected();
-            if (cont.catchFn) {
-              try {
-                cont.catchFn(e);
-                return;
-              } catch (e2) {
-                e = e2;
-              }
-            }
-            if (cont.promise) {
-              cont.promise.reject(e);
-            }
+            self._handleResolutionError(e, cont);
           }
         } else if (cont.promise) {
           cont.promise.resolve(data);
         }
       });
     },
-    _handleWhenResolvedDataIsPromise(data) {
+    _handleResolutionError: function (e, continuation) {
+      this._setRejected();
+      if (continuation.catchFn) {
+        try {
+          continuation.catchFn(e);
+          return;
+        } catch (e2) {
+          e = e2;
+        }
+      }
+      if (continuation.promise) {
+        continuation.promise.reject(e);
+      }
+    },
+    _handleWhenResolvedDataIsPromise: function (data) {
       var self = this;
       return data.then(function (result) {
         self._data = result;
@@ -220,26 +201,40 @@
         self._runRejections();
       });
     },
+    _handleUserFunctionResult: function (data, nextSynchronousPromise) {
+      if (looksLikeAPromise(data)) {
+        this._chainPromiseData(data, nextSynchronousPromise);
+      } else {
+        nextSynchronousPromise.resolve(data);
+      }
+    },
+    _chainPromiseData: function (promiseData, nextSynchronousPromise) {
+      promiseData.then(function (newData) {
+        nextSynchronousPromise.resolve(newData);
+      }).catch(function (newError) {
+        nextSynchronousPromise.reject(newError);
+      });
+    },
     _setResolved: function () {
-      this.status = "resolved";
+      this.status = RESOLVED;
       if (!this._paused) {
         this._runResolutions();
       }
     },
     _setRejected: function () {
-      this.status = "rejected";
+      this.status = REJECTED;
       if (!this._paused) {
         this._runRejections();
       }
     },
     _isPending: function () {
-      return this.status === "pending";
+      return this.status === PENDING;
     },
     _isResolved: function () {
-      return this.status === "resolved";
+      return this.status === RESOLVED;
     },
     _isRejected: function () {
-      return this.status === "rejected";
+      return this.status === REJECTED;
     }
   };
 
