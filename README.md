@@ -223,6 +223,9 @@ typings install npm:synchronous-promise --save
 ```
 *On any modern TypeScript (v2+), you shouldn't need to do this.*
 
+Also note that TypeScript does async/await cleverly, treating all promises
+equally, such that `await` will work just fine against a SynchronousPromise -- it just won't be backgrounded.
+
 ### Production code
 The main aim of SynchronousPromise is to facilitate easier testing. That being
 said, it appears to conform to expected `Promise` behaviour, barring the
