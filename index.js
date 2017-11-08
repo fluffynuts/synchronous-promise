@@ -31,9 +31,9 @@
 
   SynchronousPromise.prototype = {
     then: function (nextFn, catchFn) {
+      var next = SynchronousPromise.unresolved()._setParent(this);
       if (this._isRejected()) {
         if (this._paused) {
-          var next = SynchronousPromise.unresolved()._setParent(this);
           this._continuations.push({
             promise: next,
             nextFn: nextFn,
@@ -45,7 +45,6 @@
           try {
             var catchResult = catchFn(this._error);
             if (looksLikeAPromise(catchResult)) {
-              var next = SynchronousPromise.unresolved()._setParent(this);
               this._chainPromiseData(catchResult, next);
               return next;
             } else {
@@ -57,7 +56,6 @@
         }
         return SynchronousPromise.reject(this._error)._setParent(this);
       }
-      var next = SynchronousPromise.unresolved()._setParent(this);
       this._continuations.push({
         promise: next,
         nextFn: nextFn,
@@ -91,7 +89,7 @@
       }
       return this;
     },
-    _setParent(parent) {
+    _setParent: function (parent) {
       if (this._parent) {
         throw new Error("parent already set");
       }
@@ -110,12 +108,12 @@
         return test._isPending && test._isPending();
       });
     },
-    _findFirstPaused() {
+    _findFirstPaused: function () {
       return this._findFirstAncestor(function (test) {
         return test._paused;
       });
     },
-    _findFirstAncestor(matching) {
+    _findFirstAncestor: function (matching) {
       var test = this;
       var result;
       while (test) {
@@ -256,7 +254,7 @@
     return new SynchronousPromise(function (resolve, reject) {
       reject(result);
     });
-  }
+  };
 
   SynchronousPromise.unresolved = function () {
     return new SynchronousPromise(function (resolve, reject) {
