@@ -304,7 +304,7 @@ describe("synchronous-promise", function () {
 
       expect(result).to.exist;
       expect(result).to.be.instanceOf(SynchronousPromise);
-      expect(result._state).to.be.equal("resolved");
+      expect(result.status).to.be.equal("resolved");
     });
     it("should not interfere with a later then if there is no error", function () {
       var
@@ -602,7 +602,7 @@ describe("synchronous-promise", function () {
       var
         expected = "foo",
         result = SynchronousPromise.resolve(expected);
-      expect(result._state).to.equal("resolved");
+      expect(result.status).to.equal("resolved");
       var captured = null;
       result.then(function (data) {
         captured = data;
@@ -618,7 +618,7 @@ describe("synchronous-promise", function () {
       var
         expected = "moo",
         result = SynchronousPromise.reject(expected);
-      expect(result._state).to.equal("rejected");
+      expect(result.status).to.equal("rejected");
       var captured = null;
       result.catch(function (err) {
         captured = err;

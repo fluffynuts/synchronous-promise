@@ -8,9 +8,10 @@
   }
 
   function SynchronousPromise(handler) {
-    this._state = "pending";
+    this.status = "pending";
     this._continuations = [];
     this._parent = null;
+    this._paused = false;
     if (handler) {
       handler.call(
         this,
@@ -90,17 +91,6 @@
       }
       return this;
     },
-    _findFirstPaused() {
-      var test = this;
-      var result = null;
-      while (test) {
-        if (test._paused) {
-          result = test;
-        }
-        test = test._parent;
-      }
-      return result;
-    },
     _setParent(parent) {
       if (this._parent) {
         throw new Error("parent already set");
@@ -116,10 +106,20 @@
       }
     },
     _findFirstPending: function () {
+      return this._findFirstAncestor(function(test) {
+        return test._isPending && test._isPending();
+      });
+    },
+    _findFirstPaused() {
+      return this._findFirstAncestor(function(test) {
+        return test._paused;
+      });
+    },
+    _findFirstAncestor(matching) {
       var test = this;
       var result;
       while (test) {
-        if (test._isPending()) {
+        if (matching(test)) {
           result = test;
         }
         test = test._parent;
@@ -140,23 +140,31 @@
       if (this._paused || !this._isRejected()) {
         return;
       }
-      var error = this._error;
-      var continuations = this._takeContinuations();
-      continuations.forEach(function(cont) {
+      var 
+        error = this._error,
+        continuations = this._takeContinuations(),
+        self = this;
+      continuations.forEach(function (cont) {
         if (cont.catchFn) {
           var catchResult = cont.catchFn(error);
-          if (looksLikeAPromise(catchResult)) {
-            catchResult.then(function (newData) {
-              cont.promise.resolve(newData);
-            }).catch(function (newError) {
-              cont.promise.reject(newError);
-            });
-          } else {
-            cont.promise.resolve(catchResult);
-          }
+          self._handleUserFunctionResult(catchResult, cont.promise);
         } else {
           cont.promise.reject(error);
         }
+      });
+    },
+    _handleUserFunctionResult(data, nextSynchronousPromise) {
+      if (looksLikeAPromise(data)) {
+        this._handlePromiseData(data, nextSynchronousPromise);
+      } else {
+        nextSynchronousPromise.resolve(data);
+      }
+    },
+    _handlePromiseData(promiseData, nextSynchronousPromise) {
+      promiseData.then(function(newData) {
+        nextSynchronousPromise.resolve(newData);
+      }).catch(function(newError) {
+        nextSynchronousPromise.reject(newError);
       });
     },
     _runResolutions: function () {
@@ -164,20 +172,12 @@
         return;
       }
       var continuations = this._takeContinuations();
-      var data = this._data;
-      if (looksLikeAPromise(data)) {
-        var self = this;
-        return data.then(function (result) {
-          self._data = result;
-          self._runResolutions();
-        }).catch(function (error) {
-          self._error = error;
-          self._setRejected();
-          self._runRejections();
-        });
+      if (looksLikeAPromise(this._data)) {
+        return this._handleWhenResolvedDataIsPromise(this._data);
       }
+      var data = this._data;
       var self = this;
-      continuations.forEach(function(cont) {
+      continuations.forEach(function (cont) {
         if (cont.nextFn) {
           try {
             var result = cont.nextFn(data);
@@ -209,26 +209,37 @@
         }
       });
     },
+    _handleWhenResolvedDataIsPromise(data) {
+      var self = this;
+      return data.then(function (result) {
+        self._data = result;
+        self._runResolutions();
+      }).catch(function (error) {
+        self._error = error;
+        self._setRejected();
+        self._runRejections();
+      });
+    },
     _setResolved: function () {
-      this._state = "resolved";
+      this.status = "resolved";
       if (!this._paused) {
         this._runResolutions();
       }
     },
     _setRejected: function () {
-      this._state = "rejected";
+      this.status = "rejected";
       if (!this._paused) {
         this._runRejections();
       }
     },
     _isPending: function () {
-      return this._state === "pending";
+      return this.status === "pending";
     },
     _isResolved: function () {
-      return this._state === "resolved";
+      return this.status === "resolved";
     },
     _isRejected: function () {
-      return this._state === "rejected";
+      return this.status === "rejected";
     }
   };
 
