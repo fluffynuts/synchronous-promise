@@ -786,6 +786,21 @@ describe("synchronous-promise", function () {
           expect(resolved).to.equal(expected);
           expect(error).not.to.exist;
         });
+        it("should resolve all thens when invoked", () => {
+          // Arrange
+          var
+            sut = SynchronousPromise.unresolved(),
+            captured1,
+            captured2,
+            next1 = sut.then(result => captured1 = result),
+            next2 = sut.then(result => captured2 = result),
+            expected = "cake-moo";
+          // Act
+          sut.resolve(expected);
+          // Assert
+          expect(captured1).to.equal(expected);
+          expect(captured2).to.equal(expected);
+        });
       });
       describe("reject property", function () {
         it("should be a function", function () {
@@ -812,6 +827,28 @@ describe("synchronous-promise", function () {
           // Assert
           expect(error).to.equal(expected);
           expect(resolved).not.to.exist;
+        });
+      });
+
+      describe("with timeout in ctor", () => {
+        it("should complete when the timeout does", (done) => {
+          // Arrange
+          var
+            captured,
+            sut = new SynchronousPromise(function(resolve, reject) {
+              setTimeout(function() {
+                resolve("moo");
+              }, 0);
+            }).then(function(result) {
+              captured = result;
+            });
+          // Act
+          // Assert
+          setTimeout(function() {
+            expect(captured).to.equal("moo");
+            console.log("donesies!");
+            done();
+          }, 500);
         });
       });
     });
