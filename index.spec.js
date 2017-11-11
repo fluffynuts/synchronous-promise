@@ -846,7 +846,6 @@ describe("synchronous-promise", function () {
           // Assert
           setTimeout(function() {
             expect(captured).to.equal("moo");
-            console.log("donesies!");
             done();
           }, 500);
         });

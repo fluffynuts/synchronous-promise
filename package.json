@@ -1,6 +1,6 @@
 {
   "name": "synchronous-promise",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "Synchronous Promise-like prototype to use in testing where you would have used an ES6 Promise",
   "main": "index.js",
   "repository": {
@@ -16,7 +16,8 @@
     "lint": "jshint index.js",
     "postlint": "node -e \"console.log('Linting completed: ', new Date());\"",
     "pretest": "run-s lint",
-    "test": "mocha index.spec.js",
+    "test-js": "mocha index.spec.js",
+    "test": "run-s test-js test-ts",
     "predist": "mkdirp dist",
     "dist": "browserify browser.js -o dist/synchronous-promise.js",
     "prepublish": "run-s -s test dist",
