@@ -28,9 +28,9 @@ function looksLikeAPromise(obj) {
   return obj && typeof (obj.then) === "function";
 }
 
-SynchronousPromise._getHistory = function() {
+SynchronousPromise._getHistory = function () {
   return history.slice(0, history.length);
-}
+};
 
 SynchronousPromise.prototype = {
   then: function (nextFn, catchFn) {
@@ -91,6 +91,18 @@ SynchronousPromise.prototype = {
       firstPaused._runRejections();
     }
     return this;
+  },
+  _findAncestry: function () {
+    return this._continuations.reduce(function (acc, cur) {
+      if (cur.promise) {
+        var node = {
+          promise: cur.promise,
+          children: cur.promise._findAncestry()
+        };
+        acc.push(node);
+      }
+      return acc;
+    }, []);
   },
   _setParent: function (parent) {
     if (this._parent) {

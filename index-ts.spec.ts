@@ -2,21 +2,16 @@
 import { SynchronousPromise } from "./index";
 import { expect } from 'chai';
 
-global.Promise = SynchronousPromise;
+// global.Promise = SynchronousPromise;
 
 describe("typescript async/await", () => {
-  it("should resume", async () => {
+  it("should not hang", async function() {
     // Arrange
     // Act
-    debugger;
-    await new SynchronousPromise((resolve, reject) => {
+    await new SynchronousPromise(function(resolve, reject) {
       setTimeout(() => {
         resolve("whee!");
       }, 0);
     });
-    debugger;
   })
-  async function getResult(data: any) {
-    return await SynchronousPromise.resolve(data).then(data => data, error => { });
-  }
 });

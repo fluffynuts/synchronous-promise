@@ -23,8 +23,8 @@
     "debug": "mocha -w *.spec.js --reporter mocha-yar --debug-brk --inspect",
     "debug-ts": "mocha -r ts-node/register *.spec.ts --debug-brk --inspect",
     "preautotest-ts-once": "node -e \"console.log('TS Tests started: ', new Date());\"",
-    "autotest-ts": "nodemon -q -e ts -x \"run-s -s autotest-ts-once\"",
-    "autotest-ts-once": "mocha -r ts-node/register *.spec.ts --reporter mocha-yar",
+    "autotest-ts": "nodemon -q -e ts -x \"run-s -s test-ts\"",
+    "test-ts": "mocha -r ts-node/register *.spec.ts --reporter mocha-yar",
     "tsc": "tsc"
   },
   "author": "Davyd McColl <davydm@gmail.com> (https://github.com/fluffynuts)",
