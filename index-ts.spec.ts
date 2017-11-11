@@ -2,7 +2,13 @@
 import { SynchronousPromise } from "./index";
 import { expect } from 'chai';
 
-// global.Promise = SynchronousPromise;
+declare var __awaiter: Function;
+beforeEach(() => {
+  __awaiter = SynchronousPromise.installGlobally(__awaiter);
+});
+afterEach(() => {
+  SynchronousPromise.uninstallGlobally();
+});
 
 describe("typescript async/await", () => {
   it("should not hang", async function() {

@@ -40,3 +40,4 @@ jspm_packages
 # build artifact
 dist
 package-lock.json
+index-ts.spec.js

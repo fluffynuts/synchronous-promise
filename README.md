@@ -226,6 +226,56 @@ typings install npm:synchronous-promise --save
 Also note that TypeScript does async/await cleverly, treating all promises
 equally, such that `await` will work just fine against a SynchronousPromise -- it just won't be backgrounded.
 
+**HOWEVER:** there is a _very specific_ way that SynchronousPromise
+can interfere with TypeScript: if
+- SynchronousPromise is installed globally (ie, overriding the 
+  native `Promise` implementation) and
+- You create a SynchronousPromise which is resolved asynchronously,
+  eg:
+
+```js
+global.Promise = SynchronousPromise;
+await new SynchronousPromise((resolve, reject) => {
+  setTimeout(() => resolve(), 0);
+}); // this will hang
+```
+
+This is due to how TypeScript generates the `__awaiter` function
+which is `yielded` to provide `async`/`await` functionality, in 
+particular that the emitted code assumes that the global `Promise`
+will _always be asynchronous_, which is normally a reasonable assumption.
+
+Installing SynchronousPromise globally may be a useful testing tactic,
+which I've used in the past, but I've seen this exact issue crop up
+in production code. `SynchronousPromise` therefor also provides two methods:
+
+- `installGlobally`
+- `uninstallGlobally`
+
+which can be used if your testing would be suited to having `Promise` globally
+overridden by `SynchronousPromise`. This needs to get the locally-available `__awaiter` and the result (enclosed with a reference to the real `Promise`)
+must override that `__awaiter`, eg:
+
+```ts
+declare var __awaiter: Function;
+beforeEach(() => {
+  __awaiter = SynchronousPromise.installGlobally(__awaiter);
+});
+afterEach(() => {
+  SynchronousPromise.uninstallGlobally();
+});
+``` 
+
+It's not elegant that client code needs to know about the transpiled
+code, but this works.
+
+I have an issue open on GitHub
+[https://github.com/Microsoft/TypeScript/issues/19909](https://github.com/Microsoft/TypeScript/issues/19909)
+but discussion so far has not beein particularly convincing that
+TypeScript emission will be altered to (imo) a more robust 
+implementation which wraps the emitted `__awaiter` in a closure.
+
+
 ### Production code
 The main aim of SynchronousPromise is to facilitate easier testing. That being
 said, it appears to conform to expected `Promise` behaviour, barring the

@@ -315,6 +315,41 @@ SynchronousPromise.all = function () {
   });
 };
 
+/* jshint ignore:start */
+if (Promise === SynchronousPromise) {
+  throw new Error("Please use SynchronousPromise.installGlobally() to install globally");
+}
+var RealPromise = Promise;
+SynchronousPromise.installGlobally = function(__awaiter) {
+  if (Promise === SynchronousPromise) {
+    console.warn("SynchronousPromise has already been installed globally");
+    return;
+  } 
+  var result = patchAwaiterIfRequired(__awaiter);
+  Promise = SynchronousPromise;
+  return result;
+};
+
+SynchronousPromise.uninstallGlobally = function() {
+  if (Promise === SynchronousPromise) {
+    Promise = RealPromise;
+  }
+};
+
+function patchAwaiterIfRequired(__awaiter) {
+  if (typeof(__awaiter) === "undefined" || __awaiter.__patched) {
+    return;
+  }
+  var originalAwaiter = __awaiter;
+  __awaiter = function() {
+    var Promise = RealPromise;
+    originalAwaiter.apply(this, makeArrayFrom(arguments));
+  };
+  __awaiter.__patched = true;
+  return __awaiter;
+}
+/* jshint ignore:end */
+
 module.exports = {
   SynchronousPromise: SynchronousPromise
 };

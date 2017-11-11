@@ -63,11 +63,32 @@ export interface SynchronousPromiseConstructor {
   resolve(): SynchronousPromise<void>;
 
   /**
-   * Creates a new unresolved promise with the `resolve` and `reject` methods exposed
-   * @returns An unresolved promise with the `resolve` and `reject` methods exposed
-   */
+    * Creates a new unresolved promise with the `resolve` and `reject` methods exposed
+    * @returns An unresolved promise with the `resolve` and `reject` methods exposed
+    */
   unresolved<T>(): UnresolvedSynchronousPromise<T>;
 
+
+  /**
+    * Installs SynchronousPromise as the global Promise implementation. 
+    * When running from within typescript, you will need to use this to
+    * patch the generated __awaiter to ensure it gets a _real_ Promise implementation
+    * (see https://github.com/Microsoft/TypeScript/issues/19909).
+    *
+    * Use the following code:
+    * declare var __awaiter: Function;
+    * __awaiter = SynchronousPromise.installGlobally();
+    *
+    * This is non-destructive to the __awaiter: it simply wraps it in a closure
+    * where the real implementation of Promise has already been captured.
+    */
+  installGlobally(__awaiter: Function): Function;
+
+  /*
+   * Uninstalls SynchronousPromise as the global Promise implementation,
+   * if it is already installed.
+   */
+  uninstallGlobally(): void;
 }
 
 /**

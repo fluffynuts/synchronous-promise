@@ -9,7 +9,7 @@
   },
   "scripts": {
     "preautotest-once": "node -e \"console.log('Tests started: ', new Date());\"",
-    "autotest-once": "mocha *.spec.js --reporter mocha-yar",
+    "autotest-once": "mocha index.spec.js --reporter mocha-yar",
     "autotest": "nodemon -q -x \"run-s -s autotest-once\"",
     "autolint": "nodemon -q -x \"run-s -s lint\"",
     "prelint": "node -e \"console.log('Linting started: ', new Date());\"",
@@ -25,7 +25,9 @@
     "preautotest-ts-once": "node -e \"console.log('TS Tests started: ', new Date());\"",
     "autotest-ts": "nodemon -q -e ts -x \"run-s -s test-ts\"",
     "test-ts": "mocha -r ts-node/register *.spec.ts --reporter mocha-yar",
-    "tsc": "tsc"
+    "tsc": "tsc",
+    "test-emitted": "mocha index-ts.spec.js",
+    "debug-emitted": "mocha index-ts.spec.js --debug-brk --inspect"
   },
   "author": "Davyd McColl <davydm@gmail.com> (https://github.com/fluffynuts)",
   "license": "BSD-3-Clause",
