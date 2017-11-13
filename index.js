@@ -322,8 +322,7 @@ if (Promise === SynchronousPromise) {
 var RealPromise = Promise;
 SynchronousPromise.installGlobally = function(__awaiter) {
   if (Promise === SynchronousPromise) {
-    console.warn("SynchronousPromise has already been installed globally");
-    return;
+    return __awaiter;
   } 
   var result = patchAwaiterIfRequired(__awaiter);
   Promise = SynchronousPromise;
@@ -338,7 +337,7 @@ SynchronousPromise.uninstallGlobally = function() {
 
 function patchAwaiterIfRequired(__awaiter) {
   if (typeof(__awaiter) === "undefined" || __awaiter.__patched) {
-    return;
+    return __awaiter;
   }
   var originalAwaiter = __awaiter;
   __awaiter = function() {
