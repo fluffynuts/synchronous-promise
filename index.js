@@ -4,13 +4,11 @@ function makeArrayFrom(obj) {
   return Array.prototype.slice.apply(obj);
 }
 var
-  history = [],
   PENDING = "pending",
   RESOLVED = "resolved",
   REJECTED = "rejected";
 
 function SynchronousPromise(handler) {
-  history.push(this);
   this.status = PENDING;
   this._continuations = [];
   this._parent = null;
@@ -27,10 +25,6 @@ function SynchronousPromise(handler) {
 function looksLikeAPromise(obj) {
   return obj && typeof (obj.then) === "function";
 }
-
-SynchronousPromise._getHistory = function () {
-  return history.slice(0, history.length);
-};
 
 SynchronousPromise.prototype = {
   then: function (nextFn, catchFn) {
