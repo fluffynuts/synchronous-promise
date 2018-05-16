@@ -73,6 +73,26 @@ describe("synchronous-promise", function () {
       expect(received.message).to.equal(expected);
     });
 
+    it(`should allow re-throwing in a .catch and re-catching later`, () => {
+      // Arrange
+      var
+        sut = createResolved(),
+        error1 = "moo",
+        received = null,
+        expected = "moo-cow";
+      // Act
+      sut.then(function () {
+        throw new Error(error1);
+      }).catch(function (err) {
+        debugger;
+        throw new Error(err.message + "-cow");
+      }).catch(function (err) {
+        received = err.message;
+      });
+      // Assert
+      expect(received).to.equal(expected);
+    });
+
     it("should call the catch from a rejection invoke", () => {
       // Arrange
       var

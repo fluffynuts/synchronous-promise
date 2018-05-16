@@ -153,8 +153,13 @@ SynchronousPromise.prototype = {
       self = this;
     continuations.forEach(function (cont) {
       if (cont.catchFn) {
-        var catchResult = cont.catchFn(error);
-        self._handleUserFunctionResult(catchResult, cont.promise);
+        try {
+          var catchResult = cont.catchFn(error);
+          self._handleUserFunctionResult(catchResult, cont.promise);
+        } catch (e) {
+          var message = e.message;
+          cont.promise.reject(e);
+        }
       } else {
         cont.promise.reject(error);
       }
@@ -317,7 +322,7 @@ var RealPromise = Promise;
 SynchronousPromise.installGlobally = function(__awaiter) {
   if (Promise === SynchronousPromise) {
     return __awaiter;
-  } 
+  }
   var result = patchAwaiterIfRequired(__awaiter);
   Promise = SynchronousPromise;
   return result;
