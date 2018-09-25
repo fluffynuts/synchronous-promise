@@ -33,20 +33,20 @@
   "author": "Davyd McColl <davydm@gmail.com> (https://github.com/fluffynuts)",
   "license": "BSD-3-Clause",
   "devDependencies": {
-    "@types/chai": "^4.0.4",
+    "@types/chai": "^4.1.5",
     "@types/mocha": "^2.2.44",
-    "@types/node": "^8.0.50",
+    "@types/node": "^8.10.30",
     "browserify": "^14.5.0",
     "chai": "^4.1.2",
     "jshint": "^2.9.6",
     "mkdirp": "^0.5.1",
     "mocha": "^4.0.1",
-    "mocha-yar": "^1.0.12",
+    "mocha-yar": "^1.0.13",
     "node-ts": "^2.1.2",
-    "nodemon": "^1.12.1",
+    "nodemon": "^1.18.4",
     "npm-run-all": "^4.1.2",
     "run-sequence": "^2.2.0",
     "ts-node": "^3.3.0",
-    "typescript": "^2.6.1"
+    "typescript": "^2.9.2"
   }
 }
