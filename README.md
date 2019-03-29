@@ -41,8 +41,8 @@ One strategy would be to return the promise from
   asyncLibraryFake.someMethod
 from the
   doSomethingInteresting
-function and perform our asserts in there: 
-  
+function and perform our asserts in there:
+
 ```javascript
 describe('the thing', () => {
   it('will do some stuff', done => {
@@ -61,9 +61,9 @@ describe('the thing', () => {
 ```
 ***And there's nothing wrong with this strategy.***
 
-I need to put that out there before anyone takes offense or thinks that I'm suggesting 
+I need to put that out there before anyone takes offense or thinks that I'm suggesting
 that they're "doing it wrong".
-If you're doing this (or something very similar), great; `async/await`, if available, 
+If you're doing this (or something very similar), great; `async/await`, if available,
 can make this code quite clean and linear too.
 
 However, when we're working on more complex interactions, eg when we're not
@@ -106,7 +106,7 @@ initial.then(message => {
 ```
 
 And have error handling, either from the basic A+ spec:
-   
+
 ```javascript
 initial.then(message => {
   console.log(message);
@@ -145,7 +145,7 @@ SynchronousPromise.resolve('foo');  // creates an already-resolved promise
 SynchronousPromise.reject('bar'); // creats an already-rejected promise
 ```
 
-(`race()` isn't because I haven't determined a good strategy for that yet, 
+(`race()` isn't because I haven't determined a good strategy for that yet,
 considering the synchronous design goal -- but it's
 unlikely you'll need `race()` from a test).
 
@@ -213,7 +213,7 @@ test at defined points in a series of promise chains
 
 ### ES5
 SynchronousPromise is purposefully written with prototypical, ES5 syntax so you
-can use it from ES5 if you like. Use the `synchronous-promise.js` file from the 
+can use it from ES5 if you like. Use the `synchronous-promise.js` file from the
 `dist` folder if you'd like to include it in a browser environment (eg karma).
 
 ## Typescript
@@ -228,7 +228,7 @@ equally, such that `await` will work just fine against a SynchronousPromise -- i
 
 **HOWEVER:** there is a _very specific_ way that SynchronousPromise
 can interfere with TypeScript: if
-- SynchronousPromise is installed globally (ie, overriding the 
+- SynchronousPromise is installed globally (ie, overriding the
   native `Promise` implementation) and
 - You create a SynchronousPromise which is resolved asynchronously,
   eg:
@@ -241,7 +241,7 @@ await new SynchronousPromise((resolve, reject) => {
 ```
 
 This is due to how TypeScript generates the `__awaiter` function
-which is `yielded` to provide `async`/`await` functionality, in 
+which is `yielded` to provide `async`/`await` functionality, in
 particular that the emitted code assumes that the global `Promise`
 will _always be asynchronous_, which is normally a reasonable assumption.
 
@@ -264,7 +264,7 @@ beforeEach(() => {
 afterEach(() => {
   SynchronousPromise.uninstallGlobally();
 });
-``` 
+```
 
 It's not elegant that client code needs to know about the transpiled
 code, but this works.
@@ -272,7 +272,7 @@ code, but this works.
 I have an issue open on GitHub
 [https://github.com/Microsoft/TypeScript/issues/19909](https://github.com/Microsoft/TypeScript/issues/19909)
 but discussion so far has not beein particularly convincing that
-TypeScript emission will be altered to (imo) a more robust 
+TypeScript emission will be altered to (imo) a more robust
 implementation which wraps the emitted `__awaiter` in a closure.
 
 
@@ -284,8 +284,8 @@ always-backgrounded behaviour. One might be tempted to just use it everywhere.
 **However**: I'd highly recommend using *any* of the more venerable promise implementations
 instead of SynchronousPromise in your production code -- preferably the vanilla
 ES6 Promise, where possible (or the shim, where you're in ES5). Or Q.
-Or jQUery.Deferred(), Bluebird or any of the implementations at [https://promisesaplus.com/implementations](https://promisesaplus.com/implementations). 
+Or jQUery.Deferred(), Bluebird or any of the implementations at [https://promisesaplus.com/implementations](https://promisesaplus.com/implementations).
 
 Basically, this seems to work quite well for testing and
 I've tried to implement every behaviour I'd expect from a promise -- but I'm
-pretty sure that a native `Promise` will be better for production code any day. 
+pretty sure that a native `Promise` will be better for production code any day.
