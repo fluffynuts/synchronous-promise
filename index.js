@@ -86,6 +86,9 @@ SynchronousPromise.prototype = {
     }
     return this;
   },
+  finally: function (cb) {
+     this.then(cb, cb);
+  },
   _findAncestry: function () {
     return this._continuations.reduce(function (acc, cur) {
       if (cur.promise) {
