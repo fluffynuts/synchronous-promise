@@ -73,6 +73,13 @@ SynchronousPromise.prototype = {
     this._runRejections();
     return next;
   },
+  finally: function(callback) {
+    return (this._finally = SynchronousPromise.resolve()
+      ._setParent(this)
+      .then(function() {
+        return callback();
+      }));
+  },
   pause: function () {
     this._paused = true;
     return this;

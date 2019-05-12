@@ -872,4 +872,145 @@ describe("synchronous-promise", function () {
       });
     });
   });
+  describe(`finally`, () => {
+    it(`should call the provided function when the promise resolves`, async () => {
+      // Arrange
+      var called = false;
+      // Act
+      SynchronousPromise.resolve("foo").finally(function() {
+        called = true;
+      });
+      // Assert
+      expect(called).to.be.true;
+    });
+    it(`should call the provided function when the promise rejects`, async () => {
+      // Arrange
+      var called = false;
+      // Act
+      SynchronousPromise.reject("foo").finally(function() {
+        called = true;
+      });
+      // Assert
+    });
+    it(`should call the provided function when the promise is rejected then caught`, async () => {
+      // Arrange
+      var
+        catchCalled = false,
+        finallyCalled = false;
+      // Act
+      SynchronousPromise.reject("error")
+      .catch(function(e) {
+        catchCalled = true;
+      }).finally(function() {
+        finallyCalled = true;
+      });
+      // Assert
+      expect(catchCalled).to.be.true;
+      expect(finallyCalled).to.be.true;
+    });
+    it(`should start a new promise chain after resolution, with non-throwing finally`, async () => {
+      // Arrange
+      var captured = null;
+      // Act
+      SynchronousPromise.resolve("first value")
+        .finally(function() {
+          return "second value";
+        }).then(function(data) {
+          captured = data;
+        });
+      // Assert
+      expect(captured).to.equal("second value");
+    });
+    it(`should start a new promise chain after resolution, with resolving finally`, async () => {
+      // Arrange
+      var captured = null;
+      // Act
+      SynchronousPromise.resolve("first value")
+        .finally(function() {
+          return SynchronousPromise.resolve("second value");
+        }).then(function(data) {
+          captured = data;
+        });
+      // Assert
+      expect(captured).to.equal("second value");
+    });
+    it(`should start a new promise chain after resolution, with throwing finally`, async () => {
+      // Arrange
+      var captured = null;
+      // Act
+      SynchronousPromise.reject("first error")
+        .finally(function() {
+          throw "finally data";
+        }).catch(function(data) {
+          captured = data;
+        });
+      // Assert
+      expect(captured).to.equal("finally data");
+    });
+    it(`should start a new promise chain after resolution, with rejecting finally`, async () => {
+      // Arrange
+      var captured = null;
+      // Act
+      SynchronousPromise.reject("first error")
+        .finally(function() {
+          return SynchronousPromise.reject("finally data");
+        }).catch(function(data) {
+          captured = data;
+        });
+      // Assert
+      expect(captured).to.equal("finally data");
+    });
+    it(`should start a new promise chain after rejection, with non-throwing finally`, async () => {
+      // Arrange
+      var
+        called = false;
+      // Act
+      SynchronousPromise.reject("le error")
+        .finally(function() {
+        }).then(function() {
+          called = true;
+        });
+      // Assert
+      expect(called).to.be.true;
+    });
+    it(`should start a new promise chain after rejection, with resolving finally`, async () => {
+      // Arrange
+      var captured = null;
+      // Act
+      SynchronousPromise.reject("le error")
+        .finally(function() {
+          return SynchronousPromise.resolve("le data");
+        }).then(function(data) {
+          captured = data;
+        });
+      // Assert
+      expect(captured).to.equal("le data");
+    });
+    it(`should start a new promise chain after rejection, with throwing finally`, async () => {
+      // Arrange
+      var finallyError = null;
+      // Act
+      SynchronousPromise.reject("another error")
+      .finally(function() {
+        throw "moo cakes";
+      }).catch(function(err) {
+        finallyError = err;
+      });
+      // Assert
+      expect(finallyError).to.equal("moo cakes");
+    });
+    it(`should start a new promise chain after rejection, with rejecting finally`, async () => {
+      // Arrange
+      var finallyError = null;
+      // Act
+      SynchronousPromise.reject("another error")
+      .finally(function() {
+        return SynchronousPromise.reject("moo cakes");
+      }).catch(function(err) {
+        finallyError = err;
+      });
+      // Assert
+      expect(finallyError).to.equal("moo cakes");
+    });
+  });
 });
