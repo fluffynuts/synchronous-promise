@@ -129,6 +129,8 @@ initial.then(message => {
 if you want to. `.then()` can deal with returning raw values or promises
 (as per A+)
 
+`SynchronousPromise` also supports `.finally()` as of version 2.0.8.
+
 ### Statics
 `.all()`, `.resolve()` and `.reject()` are available on the `SynchronousPromise`
 object itself:
