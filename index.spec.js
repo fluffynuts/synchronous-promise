@@ -3,15 +3,15 @@
 * mocha expression-like syntax
 */
 "use strict";
-var
-  expect = require("chai").expect,
+const expect = require("chai").expect,
   sut = require("./index"),
-  SynchronousPromise = sut.SynchronousPromise,
-  _argumentsToArray = sut._argumentsToArray;
+  SynchronousPromise = sut.SynchronousPromise;
+
 describe("synchronous-promise", function () {
   it("should be constructable", function () {
     expect(SynchronousPromise).to.exist;
-    expect(new SynchronousPromise(function () { })).to.exist;
+    expect(new SynchronousPromise(function () {
+    })).to.exist;
   });
   it("should have a then function", function () {
     expect(SynchronousPromise.prototype.then).to.be.a("function");
@@ -19,41 +19,49 @@ describe("synchronous-promise", function () {
   it("should have a catch function", function () {
     expect(SynchronousPromise.prototype.catch).to.be.a("function");
   });
+
   function create(ctor) {
     return new SynchronousPromise(ctor);
   }
+
   function createResolved(data) {
     return SynchronousPromise.resolve(data);
   }
+
   function createRejected(data) {
     return SynchronousPromise.reject(data);
   }
+
   describe("then", function () {
     it("when resolved, should return a new resolved promise", function () {
-      var sut = createResolved();
-      expect(sut.then(null, function () { })).to.be.instanceOf(SynchronousPromise);
+      const sut = createResolved();
+      expect(sut.then(null, function () {
+      })).to.be.instanceOf(SynchronousPromise);
     });
+
     it("should return the new resolved promise v2", function () {
-      var
-        result = createResolved().then(function () {
-          /* purposely don't return anything */
-        });
+      const result = createResolved().then(function () {
+        /* purposely don't return anything */
+      });
       expect(result).to.be.instanceOf(SynchronousPromise);
     });
+
     it("should return a new rejected promise", function () {
-      var sut = createRejected();
-      expect(sut.then(function () { })).to.be.instanceOf(SynchronousPromise);
+      const sut = createRejected();
+      expect(sut.then(function () {
+      })).to.be.instanceOf(SynchronousPromise);
     });
+
     it("should return a new rejected promise v2", function () {
-      var result = createRejected().then(function () {
+      const result = createRejected().then(function () {
         /* purposely don't return anything */
       });
       expect(result).to.be.instanceOf(SynchronousPromise)
     });
+
     it("should bring the first resolve value into the first then", function () {
-      var
-        initial = "123",
-        captured = null;
+      const initial = "123";
+      let captured = null;
       createResolved(initial).then(function (data) {
         captured = data;
       });
@@ -61,10 +69,9 @@ describe("synchronous-promise", function () {
     });
 
     it("should call into the immediate catch function when the function given to then throws", function () {
-      var
-        sut = createResolved(),
-        expected = "the error",
-        received = null;
+      const sut = createResolved(),
+        expected = "the error";
+      let received = null;
       sut.then(function () {
         throw new Error(expected);
       }).catch(function (err) {
@@ -75,11 +82,10 @@ describe("synchronous-promise", function () {
 
     it(`should allow re-throwing in a .catch and re-catching later`, () => {
       // Arrange
-      var
-        sut = createResolved(),
-        error1 = "moo",
-        received = null,
-        expected = "moo-cow";
+      const sut = createResolved(),
+        error1 = "moo";
+      let received = null;
+      const expected = "moo-cow";
       // Act
       sut.then(function () {
         throw new Error(error1);
@@ -95,23 +101,23 @@ describe("synchronous-promise", function () {
 
     it("should call the catch from a rejection invoke", () => {
       // Arrange
-      var
-        expected = "moo",
+      const expected = "moo",
         sut = new SynchronousPromise(function (resolve, reject) {
           reject(expected);
-        }),
-        captured;
+        });
+      let captured = null;
       // Act
-      sut.catch(function (e) { captured = e; });
+      sut.catch(function (e) {
+        captured = e;
+      });
       // Assert
       expect(captured).to.equal(expected);
     });
 
     it("should call into the later catch function when the function given to then throws", function () {
-      var
-        sut = createResolved(),
-        expected = "the error",
-        received = null;
+      const sut = createResolved(),
+        expected = "the error";
+      let received = null;
       sut.then(function () {
         throw new Error(expected);
       }).then(function () {
@@ -124,10 +130,9 @@ describe("synchronous-promise", function () {
     });
 
     it("should prefer to call into onRejected over the .catch handler on failure", function () {
-      var
-        sut = createResolved(),
-        expected = "the error",
-        captured = null,
+      const sut = createResolved(),
+        expected = "the error";
+      let captured = null,
         catchCaptured = null;
       sut.then(function () {
         throw expected;
@@ -143,9 +148,8 @@ describe("synchronous-promise", function () {
     });
 
     it("should bring the first rejected value into the first onRejected then handler", function () {
-      var
-        initial = new Error("123"),
-        captured = null;
+      const initial = new Error("123");
+      let captured = null;
       createRejected(initial).then(function () {
       }, function (e) {
         captured = e
@@ -154,120 +158,118 @@ describe("synchronous-promise", function () {
     });
 
     it("should resolve when the first resolution is a resolved promise", function () {
-      var
-        initial = createResolved("123"),
-        captured = null;
+      const initial = createResolved("123");
+      let captured = null;
       createResolved(initial).then(function (data) {
         captured = data;
       });
       expect(captured).to.equal("123");
     });
+
     it("should catch when the first resolution is a rejected promise", function () {
-      var
-        initial = createRejected("123"),
-        captured = null;
+      const initial = createRejected("123");
+      let captured = null;
       createResolved(initial).catch(function (data) {
         captured = data;
       });
       expect(captured).to.equal("123");
-    })
+    });
+
     it("should catch when a subsequent resolution returns a rejected promise", function () {
-      var
-        initial = createResolved("123"),
-        captured = null,
-        expected = "le error";
+      const initial = createResolved("123");
+      let captured = null;
+      const expected = "le error";
       initial.then(function () {
         return createRejected(expected);
       }).catch(function (e) {
         captured = e;
-      })
+      });
 
       expect(captured).to.equal(expected);
     });
+
     it("should run a simple chain", function () {
-      var
-        initial = "123",
-        second = "abc",
-        captured = null;
-      createResolved(initial).then(function (data) {
+      const initial = "123",
+        second = "abc";
+      let captured = null;
+      createResolved(initial).then(function () {
         return createResolved(second);
       }).then(function (data) {
         captured = data;
       });
       expect(captured).to.equal(second);
     });
+
     it("should run a longer chain", function () {
-      var
-        initial = "123",
+      const initial = "123",
         second = "abc",
         third = "---",
-        expected = second + third,
-        captured = null;
-      createResolved(initial).then(function (data) {
+        expected = second + third;
+      let captured = null;
+      createResolved(initial).then(function () {
         return createResolved(second);
-      }).then(function (data) {
+      }).then(function () {
         return second;
       }).then(function (data) {
         captured = data + third;
       });
       expect(captured).to.equal(expected);
     });
+
     it("should run a longer chain v2", function () {
-      var
-        initial = "123",
+      const initial = "123",
         second = "abc",
         third = "---",
-        expected = second + third,
-        captured = null;
-      createResolved(initial).then(function (data) {
+        expected = second + third;
+      let captured = null;
+      createResolved(initial).then(function () {
         return createResolved(second);
-      }).then(function (data) {
+      }).then(function () {
         return createResolved(second);
       }).then(function (data) {
         captured = data + third;
       });
       expect(captured).to.equal(expected);
     });
+
     it("should run a longer chain v3", function () {
-      var
-        initial = "123",
+      const initial = "123",
         second = "abc",
         third = "---",
-        expected = second + third,
-        captured = null;
-      createResolved(initial).then(function (data) {
+        expected = second + third;
+      let captured = null;
+      createResolved(initial).then(function () {
         return second;
-      }).then(function (data) {
+      }).then(function () {
         return createResolved(second);
       }).then(function (data) {
         captured = data + third;
       });
       expect(captured).to.equal(expected);
     });
+
     it("should resolve when the ctor function resolves", function () {
-      var
-        providedResolve = null,
-        captured = null,
-        expected = "xyz",
-        promise = create(function (resolve, reject) {
+      let providedResolve = null,
+        captured = null;
+      const expected = "xyz",
+        promise = create(function (resolve) {
           providedResolve = resolve;
         }).then(function (data) {
           captured = data;
         });
-
+      expect(promise).to.exist;
       expect(captured).to.be.null;
       expect(providedResolve).to.be.a("function");
-      providedResolve(expected)
+      providedResolve(expected);
       expect(captured).to.equal(expected);
     });
 
     it("should resolve the same value from the same promise multiple times", () => {
       // Arrange
-      var
-        expected = "multi-pass",
-        sut = SynchronousPromise.resolve(expected),
-        captured1,
-        captured2;
+      const expected = "multi-pass",
+        sut = SynchronousPromise.resolve(expected);
+      let captured1 = null,
+        captured2 = null;
       // Act
       sut.then(result => captured1 = result);
       sut.then(result => captured2 = result);
@@ -276,21 +278,21 @@ describe("synchronous-promise", function () {
       expect(captured2).to.equal(expected);
     });
   });
+
   describe("catch", function () {
     it("should be called if the initial reject is called", function () {
-      var
-        expected = "123",
-        captured = null;
+      const expected = "123";
+      let captured = null;
       createRejected(expected).catch(function (e) {
         captured = e;
-      })
+      });
       expect(captured).to.equal(expected);
     });
+
     it("should call handler if the promise resolves", function () {
       // Arrange
-      var
-        sut = SynchronousPromise.unresolved(),
-        resolved = false,
+      const sut = SynchronousPromise.unresolved();
+      let resolved = false,
         caught = false;
       // Act
       sut.then(() => resolved = true).catch(() => caught = true);
@@ -299,25 +301,25 @@ describe("synchronous-promise", function () {
       expect(resolved).to.be.true;
       expect(caught).to.be.false;
     });
+
     it("should be called on a delayed rejection", function () {
-      var
-        providedReject = null,
-        captured = null,
-        expected = "123",
+      let providedReject = null,
+        captured = null;
+      const expected = "123",
         promise = create(function (resolve, reject) {
           providedReject = reject;
         }).catch(function (e) {
           captured = e;
         });
-
+      expect(promise).to.exist;
       expect(captured).to.be.null;
       expect(providedReject).to.be.a("function");
       providedReject(expected);
       expect(captured).to.equal(expected);
     });
+
     it("should return a resolved promise if doesn't throw an error", function () {
-      var
-        promise = createRejected("123"),
+      const promise = createRejected("123"),
         result = promise.catch(function (data) {
           expect(data).to.equal("123");
         });
@@ -326,56 +328,56 @@ describe("synchronous-promise", function () {
       expect(result).to.be.instanceOf(SynchronousPromise);
       expect(result.status).to.be.equal("resolved");
     });
+
     it("should not interfere with a later then if there is no error", function () {
-      var
-        captured = null,
-        expected = "123",
-        capturedError = null;
+      let captured = null;
+      const expected = "123";
+      let capturedError = null;
       createResolved(expected).catch(function (e) {
         capturedError = e;
       }).then(function (data) {
         captured = data;
-      })
+      });
 
       expect(capturedError).to.be.null;
       expect(captured).to.equal(expected);
     });
+
     it("should not be called if the promise is handled successful by a previous onRejected handler", function () {
-      var
-        expected = new Error("123"),
-        notExpected = new Error("Not expected"),
-        capturedError = null;
+      const expected = new Error("123"),
+        notExpected = new Error("Not expected");
+      let capturedError = null;
       createRejected(expected).then(
-        function () { },
+        function () {
+        },
         function (e) {
           capturedError = e
         })
         .catch(function () {
           /* purposely don't return anything */
           capturedError = notExpected;
-        })
+        });
 
       expect(capturedError).to.equal(expected);
     });
+
     it("should prevent the handlers after the error from being called", function () {
-      var
-        captured = null;
+      let captured = null;
       createResolved("123").catch(function (e) {
-      }).then(function (data) {
+      }).then(function () {
         throw "foo";
-      }).then(function (data) {
+      }).then(function () {
         captured = "abc";
-      })
+      });
 
       expect(captured).to.be.null;
     });
 
     it("should re-catch if a catch handler returns a rejected promise", function (done) {
       // Arrange
-      var
-        expected = "123",
-        pausedRejectedPromise = SynchronousPromise.reject(expected).pause(),
-        capturedA = null,
+      const expected = "123",
+        pausedRejectedPromise = SynchronousPromise.reject(expected).pause();
+      let capturedA = null,
         capturedB = null;
 
       pausedRejectedPromise.catch(function (e) {
@@ -384,7 +386,7 @@ describe("synchronous-promise", function () {
         return Promise.reject(e);
       }).catch(function (e) {
         capturedB = e;
-      })
+      });
 
       // Act
       pausedRejectedPromise.resume();
@@ -403,10 +405,9 @@ describe("synchronous-promise", function () {
 
     it("should re-catch if a then onRejected handler returns a rejected promise", function (done) {
       // Arrange
-      var
-        expected = "123",
-        pausedRejectedPromise = SynchronousPromise.reject(expected).pause(),
-        capturedA = null,
+      const expected = "123",
+        pausedRejectedPromise = SynchronousPromise.reject(expected).pause();
+      let capturedA = null,
         capturedB = null;
 
       pausedRejectedPromise.then(function () {
@@ -417,7 +418,7 @@ describe("synchronous-promise", function () {
         return Promise.reject(e);
       }).catch(function (e) {
         capturedB = e;
-      })
+      });
 
       // Act
       pausedRejectedPromise.resume();
@@ -432,10 +433,9 @@ describe("synchronous-promise", function () {
 
     it("should continue if a catch handler returns a resolved promise", function (done) {
       // Arrange
-      var
-        expected = "123",
-        pausedRejectedPromise = SynchronousPromise.reject(expected).pause(),
-        capturedA = null,
+      const expected = "123",
+        pausedRejectedPromise = SynchronousPromise.reject(expected).pause();
+      let capturedA = null,
         capturedB = null,
         secondResolve;
 
@@ -465,18 +465,21 @@ describe("synchronous-promise", function () {
       }, 100);
     });
   });
+
   describe("prototype pause", function () {
     it("should exist as a function on the prototype", function () {
       expect(SynchronousPromise.prototype.pause).to.be.a("function");
     });
+
     it("should return the promise", function () {
       const
         promise = createResolved("123"),
         result = promise.pause();
       expect(result).to.equal(promise);
     });
+
     it("should prevent resolution from continuing at that point", function () {
-      var calls = 0;
+      let calls = 0;
       createResolved("123").then(function () {
         return calls++;
       }).pause().then(function () {
@@ -484,16 +487,17 @@ describe("synchronous-promise", function () {
       });
       expect(calls).to.equal(1);
     });
+
     it("should prevent rejection from being caught at that point", function () {
-      var calls = 0;
-      createRejected("123").pause().catch(function (e) {
+      let calls = 0;
+      createRejected("123").pause().catch(function () {
         calls++;
-      })
+      });
       expect(calls).to.equal(0);
     });
+
     it("should prevent rejection from continuing past at that point", function () {
-      var
-        calls = 0,
+      let calls = 0,
         captured = null;
 
       createRejected("123").then(function () {
@@ -507,24 +511,24 @@ describe("synchronous-promise", function () {
 
       expect(captured).to.equal("123");
       expect(calls).to.equal(0);
-    })
+    });
+
     describe("starting paused", function () {
       it("should return a promise in paused state with no initial data and being resolved on resume", function () {
-        var
-          captured,
-          promise = SynchronousPromise.resolve().pause().then(function () {
-            return "moo";
-          }).then(function (data) {
-            captured = data;
-          });
+        let captured = undefined;
+        const promise = SynchronousPromise.resolve().pause().then(function () {
+          return "moo";
+        }).then(function (data) {
+          captured = data;
+        });
         expect(captured).to.be.undefined;
         promise.resume();
         expect(captured).to.equal("moo");
       });
+
       it("should return a promise in paused state with no initial data and being rejected on resume", function () {
-        var
-          captured,
-          expected = new Error("moon"),
+        let captured = undefined;
+        const expected = new Error("moon"),
           promise = SynchronousPromise.resolve().pause().then(function () {
             throw expected
           }).catch(function (e) {
@@ -534,10 +538,10 @@ describe("synchronous-promise", function () {
         promise.resume();
         expect(captured).to.equal(expected);
       });
+
       it("should return a promise in paused state with no initial data and being resolved after a catch on resume", function () {
-        var
-          captured,
-          error = new Error("moon"),
+        let captured = undefined;
+        const error = new Error("moon"),
           promise = SynchronousPromise.resolve().pause().then(function () {
             throw error
           }).catch(function (e) {
@@ -555,35 +559,36 @@ describe("synchronous-promise", function () {
     it("should exist as a function on the prototype", function () {
       expect(SynchronousPromise.prototype.resume).to.be.a("function");
     });
+
     it("should return the promise", function () {
-      var
-        promise = createResolved("123").pause(),
+      const promise = createResolved("123").pause(),
         result = promise.resume();
       expect(result).to.equal(promise);
     });
+
     it("should not barf if the promise is not already paused", function () {
-      var promise = createResolved("123");
+      const promise = createResolved("123");
       expect(function () {
         promise.resume();
       }).not.to.throw;
-    })
+    });
+
     it("should resume resolution operations after the last pause", function () {
-      var
-        calls = 0,
-        promise = createResolved("123").then(function () {
-          return calls++;
-        }).pause().then(function () {
-          return calls++;
-        });
+      let calls = 0;
+      const promise = createResolved("123").then(function () {
+        return calls++;
+      }).pause().then(function () {
+        return calls++;
+      });
       expect(calls).to.equal(1);
       promise.resume();
       expect(calls).to.equal(2);
     });
+
     it("should resume rejection operations after the last pause", function () {
-      var
-        calls = 0,
-        captured = null,
-        expected = "die, scum!",
+      let calls = 0,
+        captured = null;
+      const expected = "die, scum!",
         promise = createResolved("123").then(function () {
           throw expected;
         }).pause().then(function () {
@@ -597,11 +602,11 @@ describe("synchronous-promise", function () {
       expect(calls).to.equal(0);
       expect(captured).to.equal(expected);
     });
+
     it("should resume a promise which was started rejected as rejected", function () {
-      var
-        calls = 0,
-        captured = null,
-        expected = "it\"s the end of the world!",
+      let calls = 0,
+        captured = null;
+      const expected = "it\"s the end of the world!",
         promise = SynchronousPromise.reject(expected).pause().then(function () {
           calls++;
         }).catch(function (e) {
@@ -612,50 +617,51 @@ describe("synchronous-promise", function () {
       promise.resume();
       expect(calls).to.equal(0);
       expect(captured).to.equal(expected);
-    })
-  })
+    });
+  });
   describe("static resolve", function () {
     it("should be a function", function () {
       expect(SynchronousPromise.resolve).to.be.a("function");
     });
+
     it("should return a resolved promise", function () {
-      var
-        expected = "foo",
+      const expected = "foo",
         result = SynchronousPromise.resolve(expected);
       expect(result.status).to.equal("resolved");
-      var captured = null;
+      let captured = null;
       result.then(function (data) {
         captured = data;
       });
       expect(captured).to.equal(expected);
-    })
+    });
   });
   describe("static reject", function () {
     it("should be a function", function () {
       expect(SynchronousPromise.reject).to.be.a("function");
     });
+
     it("should return a rejected promise", function () {
-      var
-        expected = "moo",
+      const expected = "moo",
         result = SynchronousPromise.reject(expected);
       expect(result.status).to.equal("rejected");
-      var captured = null;
+      let captured = null;
       result.catch(function (err) {
         captured = err;
       });
       expect(captured).to.equal(expected);
     });
   });
+
   describe("static all", function () {
     it("should be a function", function () {
       expect(SynchronousPromise.all).to.be.a("function")
-    })
+    });
+
     it("should resolve with all values from given resolved promises as variable args", function () {
-      var
-        p1 = createResolved("abc"),
+      const p1 = createResolved("abc"),
         p2 = createResolved("123"),
-        all = SynchronousPromise.all(p1, p2),
-        captured = null;
+        all = SynchronousPromise.all(p1, p2);
+      let captured = null;
 
       all.then(function (data) {
         captured = data;
@@ -667,9 +673,8 @@ describe("synchronous-promise", function () {
     });
 
     it("should resolve with all values from given promise or none promise variable args", function () {
-      var
-        all = SynchronousPromise.all(["123", createResolved("abc")]),
-        captured = null;
+      const all = SynchronousPromise.all(["123", createResolved("abc")]);
+      let captured = null;
 
       all.then(function (data) {
         captured = data;
@@ -679,12 +684,12 @@ describe("synchronous-promise", function () {
       expect(captured).to.contain("abc");
       expect(captured).to.contain("123");
     });
+
     it("should resolve with all values from given resolved promises as an array", function () {
-      var
-        p1 = createResolved("abc"),
+      const p1 = createResolved("abc"),
         p2 = createResolved("123"),
-        all = SynchronousPromise.all([p1, p2]),
-        captured = null;
+        all = SynchronousPromise.all([p1, p2]);
+      let captured = null;
 
       all.then(function (data) {
         captured = data;
@@ -694,10 +699,10 @@ describe("synchronous-promise", function () {
       expect(captured).to.contain("abc");
       expect(captured).to.contain("123");
     });
+
     it("should resolve empty promise array", function () {
-      var
-        all = SynchronousPromise.all([]),
-        captured = null;
+      const all = SynchronousPromise.all([]);
+      let captured = null;
 
       all.then(function (data) {
         captured = data;
@@ -705,17 +710,17 @@ describe("synchronous-promise", function () {
 
       expect(captured).to.have.length(0);
     });
-    it("should resolve with values in the correct order", function () {
-      var
-        resolve1,
-        resolve2,
-        captured;
 
-      var p1 = create(function (resolve) {
+    it("should resolve with values in the correct order", function () {
+      let resolve1 = undefined,
+        resolve2 = undefined,
+        captured = undefined;
+
+      const p1 = create(function (resolve) {
         resolve1 = resolve;
       });
 
-      var p2 = create(function (resolve) {
+      const p2 = create(function (resolve) {
         resolve2 = resolve;
       });
 
@@ -728,12 +733,12 @@ describe("synchronous-promise", function () {
 
       expect(captured).to.deep.equal(["b", "a"]);
     });
+
     it("should reject if any promise rejects", function () {
-      var
-        p1 = createResolved("abc"),
+      const p1 = createResolved("abc"),
         p2 = createRejected("123"),
-        all = SynchronousPromise.all(p1, p2),
-        capturedData = null,
+        all = SynchronousPromise.all(p1, p2);
+      let capturedData = null,
         capturedError = null;
       all.then(function (data) {
         capturedData = data;
@@ -752,10 +757,11 @@ describe("synchronous-promise", function () {
       expect(SynchronousPromise.unresolved).to.exist;
       expect(SynchronousPromise.unresolved).to.be.a("function");
     });
+
     it("should return a new SynchronousPromise", function () {
       // Arrange
       // Act
-      var result1 = SynchronousPromise.unresolved(),
+      const result1 = SynchronousPromise.unresolved(),
         result2 = SynchronousPromise.unresolved();
       // Assert
       expect(result1).to.exist;
@@ -764,10 +770,11 @@ describe("synchronous-promise", function () {
       expect(Object.getPrototypeOf(result2)).to.equal(SynchronousPromise.prototype);
       expect(result1).not.to.equal(result2);
     });
+
     describe("result", function () {
       it("should not be resolved or rejected", function () {
         // Arrange
-        var resolved = false,
+        let resolved = false,
           rejected = false;
         // Act
         SynchronousPromise.unresolved().then(function () {
@@ -779,26 +786,27 @@ describe("synchronous-promise", function () {
         expect(resolved).to.be.false;
         expect(rejected).to.be.false;
       });
+
       describe("resolve", function () {
         it("should be a function", function () {
           // Arrange
           // Act
-          var sut = SynchronousPromise.unresolved();
+          const sut = SynchronousPromise.unresolved();
           // Assert
           expect(sut.resolve).to.exist;
           expect(sut.resolve).to.be.a("function");
         });
+
         it("should resolve the promise when invoked", function () {
           // Arrange
-          var
-            resolved = undefined,
-            error = undefined,
-            sut = SynchronousPromise.unresolved().then(function (result) {
+          let resolved = undefined,
+            error = undefined;
+          const sut = SynchronousPromise.unresolved().then(function (result) {
               resolved = result;
             }).catch(function (err) {
               error = err;
             }),
-            expected = { key: "value" };
+            expected = {key: "value"};
           // Act
           debugger;
           sut.resolve(expected);
@@ -806,15 +814,17 @@ describe("synchronous-promise", function () {
           expect(resolved).to.equal(expected);
           expect(error).not.to.exist;
         });
+
         it("should resolve all thens when invoked", () => {
           // Arrange
-          var
-            sut = SynchronousPromise.unresolved(),
-            captured1,
-            captured2,
-            next1 = sut.then(result => captured1 = result),
+          const sut = SynchronousPromise.unresolved();
+          let captured1 = undefined,
+            captured2 = undefined;
+          const next1 = sut.then(result => captured1 = result),
             next2 = sut.then(result => captured2 = result),
             expected = "cake-moo";
+          expect(next1).to.exist;
+          expect(next2).to.exist;
           // Act
           sut.resolve(expected);
           // Assert
@@ -826,22 +836,22 @@ describe("synchronous-promise", function () {
         it("should be a function", function () {
           // Arrange
           // Act
-          var sut = SynchronousPromise.unresolved();
+          const sut = SynchronousPromise.unresolved();
           // Assert
           expect(sut.reject).to.exist;
           expect(sut.reject).to.be.a("function");
         });
+
         it("should reject the promise when invoked", function () {
           // Arrange
-          var
-            resolved = undefined,
-            error = undefined,
-            sut = SynchronousPromise.unresolved().then(function (result) {
+          let resolved = undefined,
+            error = undefined;
+          const sut = SynchronousPromise.unresolved().then(function (result) {
               resolved = result;
             }).catch(function (err) {
               error = err;
             }),
-            expected = { key: "value" };
+            expected = {key: "value"};
           // Act
           sut.reject(expected);
           // Assert
@@ -853,18 +863,17 @@ describe("synchronous-promise", function () {
       describe("with timeout in ctor", () => {
         it("should complete when the timeout does", (done) => {
           // Arrange
-          var
-            captured,
-            sut = new SynchronousPromise(function(resolve, reject) {
-              setTimeout(function() {
-                resolve("moo");
-              }, 0);
-            }).then(function(result) {
-              captured = result;
-            });
+          let captured;
           // Act
+          new SynchronousPromise(function (resolve) {
+            setTimeout(function () {
+              resolve("moo");
+            }, 0);
+          }).then(function (result) {
+            captured = result;
+          });
           // Assert
-          setTimeout(function() {
+          setTimeout(function () {
             expect(captured).to.equal("moo");
             done();
           }, 500);
@@ -875,142 +884,519 @@ describe("synchronous-promise", function () {
   describe(`finally`, () => {
     it(`should call the provided function when the promise resolves`, async () => {
       // Arrange
-      var called = false;
+      let called = false;
       // Act
-      SynchronousPromise.resolve("foo").finally(function() {
+      SynchronousPromise.resolve("foo").finally(function () {
         called = true;
       });
       // Assert
       expect(called).to.be.true;
     });
+
     it(`should call the provided function when the promise rejects`, async () => {
       // Arrange
-      var called = false;
+      let called = false;
       // Act
-      SynchronousPromise.reject("foo").finally(function() {
+      SynchronousPromise.reject("foo").finally(function () {
         called = true;
       });
       // Assert
     });
+
     it(`should call the provided function when the promise is rejected then caught`, async () => {
       // Arrange
-      var
-        catchCalled = false,
+      let catchCalled = false,
         finallyCalled = false;
       // Act
       SynchronousPromise.reject("error")
-      .catch(function(e) {
-        catchCalled = true;
-      }).finally(function() {
+        .catch(function () {
+          catchCalled = true;
+        }).finally(function () {
         finallyCalled = true;
       });
       // Assert
       expect(catchCalled).to.be.true;
       expect(finallyCalled).to.be.true;
     });
+
     it(`should start a new promise chain after resolution, with non-throwing finally`, async () => {
       // Arrange
-      var captured = null;
+      let captured = null;
       // Act
       SynchronousPromise.resolve("first value")
-        .finally(function() {
+        .finally(function () {
           return "second value";
-        }).then(function(data) {
-          captured = data;
-        });
+        }).then(function (data) {
+        captured = data;
+      });
       // Assert
       expect(captured).to.equal("second value");
     });
+
     it(`should start a new promise chain after resolution, with resolving finally`, async () => {
       // Arrange
-      var captured = null;
+      let captured = null;
       // Act
       SynchronousPromise.resolve("first value")
-        .finally(function() {
+        .finally(function () {
           return SynchronousPromise.resolve("second value");
-        }).then(function(data) {
-          captured = data;
-        });
+        }).then(function (data) {
+        captured = data;
+      });
       // Assert
       expect(captured).to.equal("second value");
     });
+
     it(`should start a new promise chain after resolution, with throwing finally`, async () => {
       // Arrange
-      var captured = null;
+      let captured = null;
       // Act
       SynchronousPromise.reject("first error")
-        .finally(function() {
+        .finally(function () {
           throw "finally data";
-        }).catch(function(data) {
-          captured = data;
-        });
+        }).catch(function (data) {
+        captured = data;
+      });
       // Assert
       expect(captured).to.equal("finally data");
     });
+
     it(`should start a new promise chain after resolution, with rejecting finally`, async () => {
       // Arrange
-      var captured = null;
+      let captured = null;
       // Act
       SynchronousPromise.reject("first error")
-        .finally(function() {
+        .finally(function () {
           return SynchronousPromise.reject("finally data");
-        }).catch(function(data) {
-          captured = data;
-        });
+        }).catch(function (data) {
+        captured = data;
+      });
       // Assert
       expect(captured).to.equal("finally data");
     });
+
     it(`should start a new promise chain after rejection, with non-throwing finally`, async () => {
       // Arrange
-      var
-        called = false;
+      let called = false;
       // Act
       SynchronousPromise.reject("le error")
-        .finally(function() {
-        }).then(function() {
-          called = true;
-        });
+        .finally(function () {
+        }).then(function () {
+        called = true;
+      });
       // Assert
       expect(called).to.be.true;
     });
+
     it(`should start a new promise chain after rejection, with resolving finally`, async () => {
       // Arrange
-      var captured = null;
+      let captured = null;
       // Act
       SynchronousPromise.reject("le error")
-        .finally(function() {
+        .finally(function () {
           return SynchronousPromise.resolve("le data");
-        }).then(function(data) {
-          captured = data;
-        });
+        }).then(function (data) {
+        captured = data;
+      });
       // Assert
       expect(captured).to.equal("le data");
     });
+
     it(`should start a new promise chain after rejection, with throwing finally`, async () => {
       // Arrange
-      var finallyError = null;
+      let finallyError = null;
       // Act
       SynchronousPromise.reject("another error")
-      .finally(function() {
-        throw "moo cakes";
-      }).catch(function(err) {
+        .finally(function () {
+          throw "moo cakes";
+        }).catch(function (err) {
         finallyError = err;
       });
       // Assert
       expect(finallyError).to.equal("moo cakes");
     });
+
     it(`should start a new promise chain after rejection, with rejecting finally`, async () => {
       // Arrange
-      var finallyError = null;
+      let finallyError = null;
       // Act
       SynchronousPromise.reject("another error")
-      .finally(function() {
-        return SynchronousPromise.reject("moo cakes");
-      }).catch(function(err) {
+        .finally(function () {
+          return SynchronousPromise.reject("moo cakes");
+        }).catch(function (err) {
         finallyError = err;
       });
       // Assert
       expect(finallyError).to.equal("moo cakes");
+    });
+
+    describe(`issues`, () => {
+      it(`should be called after one then from resolved()`, async () => {
+        // Arrange
+        const events = [];
+        // Act
+        SynchronousPromise.resolve("initial")
+          .then(result => {
+            events.push(result);
+            events.push("then");
+          }).finally(() => {
+          events.push("finally");
+        });
+        // Assert
+        expect(events).to.eql(
+          ["initial", "then", "finally"]
+        );
+      });
+
+      it(`should be called after two thens from resolved()`, async () => {
+        // Arrange
+        const events = [];
+        // Act
+        SynchronousPromise.resolve("initial")
+          .then(result => {
+            events.push(result);
+            events.push("then1");
+            return "then1";
+          }).then(result => {
+            events.push(`then2 received: ${result}`);
+            events.push("then2");
+            console.log(events);
+        }).finally(() => {
+          events.push("finally");
+        });
+        // Assert
+        expect(events).to.eql(
+          [ "initial", "then1", "then2 received: then1", "then2", "finally" ]
+        );
+      });
+
+      it(`should not be called from an unresolved promise`, async () => {
+        // Arrange
+        const events = [];
+        // Act
+        SynchronousPromise.unresolved()
+          .then(result => {
+            debugger;
+            events.push(`result: ${result}`)
+          })
+          .catch(() => events.push("catch"))
+          .finally(() => events.push("finally"));
+        // Assert
+        expect(events).to.be.empty;
+      });
+
+      it(`should not be run if chain is paused`, async () => {
+        // Arrange
+        const events = [];
+
+        const promise = SynchronousPromise.resolve('init')
+          .then((result) => { events.push(`result: ${result}`) })
+          .pause()
+          .then(() => { events.push('resumed') })
+          .finally(() => { events.push('finally') });
+        expect(events).to.eql([ "result: init"]);
+        // Act
+        promise.resume();
+        // Assert
+        expect(events).to.eql([ "result: init", "resumed", "finally" ]);
+      });
+
+      describe(`imported specs from blalasaadri`, () => {
+        // these relate to https://github.com/fluffynuts/synchronous-promise/issues/15
+        // reported by https://github.com/blalasaadri
+        describe('SynchronousPromise', () => {
+          describe('new SynchronousPromise', () => {
+            it('calls .then() after being resolved', () => {
+              const events = [];
+
+              new SynchronousPromise((resolve) => {
+                events.push('init');
+                resolve('resolve')
+              }).then(result => { events.push(`result: ${result}`) })
+                .then(() => { events.push('then') });
+
+              expect(events)
+                .to.eql(['init', 'result: resolve', 'then'])
+            });
+
+            it('calls .catch() but not previous .then()s after being rejected', () => {
+              const events = [];
+
+              new SynchronousPromise((resolve, reject) => {
+                events.push('init');
+                reject('reject')
+              }).then(result => { events.push(`result: ${result}`) })
+                .then(() => { events.push('then') })
+                .catch(error => { events.push(`error: ${error}`) });
+
+              expect(events)
+                .to.eql(['init', 'error: reject'])
+            });
+
+            it('calls .finally() after .then()', () => {
+              const events = [];
+
+              new SynchronousPromise((resolve) => {
+                resolve('init')
+              }).then(result => { events.push(`result: ${result}`) })
+                .then(() => { events.push('then') })
+                .finally(() => { events.push('finally') });
+
+              expect(events)
+                .to.eql(['result: init', 'then', 'finally'])
+            });
+
+            it('calls .finally() after .catch()', () => {
+              const events = [];
+
+              new SynchronousPromise((resolve, reject) => {
+                reject('init')
+              }).then(result => { events.push(`result: ${result}`) })
+                .then(() => { events.push('then') })
+                .catch(error => { events.push(`error: ${error}`) })
+                .finally(() => { events.push('finally') });
+
+              expect(events)
+                .to.eql(['error: init', 'finally'])
+            })
+          });
+
+          describe('SynchronousPromise.unresolved', () => {
+            describe('calls .then() only after being resolved', () => {
+              it('calls nothing before promise.resolve is called', () => {
+                const events = [];
+
+                SynchronousPromise.unresolved()
+                  .then((result) => { events.push(`result: ${result}`) })
+                  .then(() => { events.push('then') });
+
+                expect(events).to.eql([])
+              });
+
+              it('calls .then() once promise.resolve is called', () => {
+                const events = [];
+
+                const promise = SynchronousPromise.unresolved()
+                  .then((result) => { events.push(`result: ${result}`) })
+                  .then(() => { events.push('then') });
+                promise.resolve('resolve');
+
+                expect(events).to.eql(['result: resolve', 'then'])
+              })
+            });
+
+            it('calls .catch() but not previous .then()s after being rejected', () => {
+              const events = [];
+
+              const promise = SynchronousPromise.unresolved()
+                .then((result) => { events.push(`result: ${result}`) })
+                .then(() => { events.push('then') })
+                .catch(error => { events.push(`error: ${error}`) });
+              promise.reject('reject');
+
+              expect(events)
+                .to.eql(['error: reject'])
+            });
+
+            describe('calls .finally() after .then()', () => {
+              it('calls nothing before promise.resolve is called', () => {
+                const events = [];
+
+                SynchronousPromise.unresolved()
+                  .then((result) => { events.push(`result: ${result}`) })
+                  .then(() => { events.push('then') })
+                  .finally(() => { events.push('finally') });
+
+                expect(events)
+                  .not.to.contain('finally');
+                expect(events)
+                  .to.eql([])
+              });
+
+              it('calls .then() and .finally() once promise.resolve is called', () => {
+                const events = [];
+
+                const promise = SynchronousPromise.unresolved()
+                  .then((result) => { events.push(`result: ${result}`) })
+                  .then(() => { events.push('then') })
+                  .finally(() => { events.push('finally') });
+                promise.resolve('resolve');
+
+                expect(events)
+                  .not.to.eql(['finally', 'result: undefined', 'then']);
+                expect(events)
+                  .to.eql(['result: resolve', 'then', 'finally'])
+              })
+            });
+
+            describe('calls .finally() after .catch()', () => {
+              it('calls nothing before promise.reject is called', () => {
+                const events = [];
+
+                SynchronousPromise.unresolved()
+                  .then((result) => { events.push(`result: ${result}`) })
+                  .catch(() => { events.push('catch') })
+                  .finally(() => { events.push('finally') });
+
+                expect(events)
+                  .not.to.contain('finally');
+                expect(events)
+                  .to.eql([])
+              });
+
+              it('calls .catch() and .finally() once promise.reject is called', () => {
+                const events = [];
+
+                const promise = SynchronousPromise.unresolved()
+                  .then((result) => { events.push(`result: ${result}`) })
+                  .catch((error) => { events.push(`error: ${error}`) })
+                  .finally(() => { events.push('finally') });
+                promise.reject('reject');
+
+                expect(events)
+                  .not.to.eql(['finally', 'result: undefined']);
+                expect(events)
+                  .to.eql(['error: reject', 'finally'])
+              })
+            })
+          });
+
+          describe('SynchronousPromise.resolve(...).pause', () => {
+            describe('calls .then() only after being resolved', () => {
+              it('calls nothing after the initial initialization before promise.resume is called', () => {
+                const events = [];
+
+                SynchronousPromise.resolve('init')
+                  .then((result) => { events.push(`result: ${result}`) })
+                  .pause()
+                  .then(() => { events.push('resumed') });
+
+                expect(events)
+                  .to.eql(['result: init'])
+              });
+
+              it('calls .then() after the inital initialization after promise.resume is called', () => {
+                const events = [];
+
+                const promise = SynchronousPromise.resolve('init')
+                  .then((result) => { events.push(`result: ${result}`) })
+                  .pause()
+                  .then(() => { events.push('resumed') });
+                promise.resume();
+
+                expect(events)
+                  .to.eql(['result: init', 'resumed'])
+              })
+            });
+
+            describe('calls .catch() only after being resolved', () => {
+              it('calls nothing after the inital initialization before promise.resume is called', () => {
+                const events = [];
+
+                SynchronousPromise.resolve('init')
+                  .then((result) => {
+                    events.push(`result: ${result}`);
+                    throw Error('resumed')
+                  })
+                  .pause()
+                  .catch(({ message }) => { events.push(`catch: ${message}`) });
+
+                expect(events)
+                  .to.eql(['result: init'])
+              });
+
+              it('calls .catch() after the inital initialization after promise.resume is called', () => {
+                const events = [];
+
+                const promise = SynchronousPromise.resolve('init')
+                  .then((result) => {
+                    events.push(`result: ${result}`);
+                    throw Error('resumed')
+                  })
+                  .pause()
+                  .catch(({ message }) => { events.push(`catch: ${message}`) });
+                promise.resume();
+
+                expect(events)
+                  .to.eql(['result: init', 'catch: resumed'])
+              })
+            });
+
+            describe('calls .finally() after .then()', () => {
+              it('calls nothing before promise.resume is called', () => {
+                const events = [];
+
+                SynchronousPromise.resolve('init')
+                  .then((result) => { events.push(`result: ${result}`) })
+                  .pause()
+                  .then(() => { events.push('resumed') })
+                  .finally(() => { events.push('finally') });
+
+                expect(events)
+                  .not.to.contain('finally');
+                expect(events)
+                  .to.eql(['result: init'])
+              });
+
+              it('calls .then() and .finally() once promise.resume is called', () => {
+                const events = [];
+
+                const promise = SynchronousPromise.resolve('init')
+                  .then((result) => { events.push(`result: ${result}`) })
+                  .pause()
+                  .then(() => { events.push('resumed') })
+                  .finally(() => { events.push('finally') });
+                promise.resume();
+
+                expect(events)
+                  .not.to.eql(['result: init', 'finally', 'resumed']);
+                expect(events)
+                  .to.eql(['result: init', 'resumed', 'finally'])
+              })
+            });
+
+            describe('calls .finally() after .catch()', () => {
+              it('calls nothing before promise.resume is called', () => {
+                const events = [];
+
+                SynchronousPromise.resolve('init')
+                  .then((result) => {
+                    events.push(`result: ${result}`);
+                    throw Error('resumed')
+                  })
+                  .pause()
+                  .catch(({ message }) => { events.push(`catch: ${message}`) })
+                  .finally(() => { events.push('finally') });
+
+                expect(events)
+                  .not.to.contain('finally');
+                expect(events)
+                  .to.eql(['result: init'])
+              });
+
+              it('calls .catch() and .finally() once promise.resume is called', () => {
+                const events = [];
+
+                const promise = SynchronousPromise.resolve('init')
+                  .then((result) => {
+                    events.push(`result: ${result}`);
+                    throw Error('resumed')
+                  })
+                  .pause()
+                  .catch(({ message }) => { events.push(`catch: ${message}`) })
+                  .finally(() => { events.push('finally') });
+                promise.resume();
+
+                expect(events)
+                  .not.to.eql(['result: init', 'finally', 'catch: resumed']);
+                expect(events)
+                  .to.eql(['result: init', 'catch: resumed', 'finally'])
+              })
+            })
+          })
+        })
+      });
+
     });
   });
 });

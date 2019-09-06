@@ -74,11 +74,15 @@ SynchronousPromise.prototype = {
     return next;
   },
   finally: function(callback) {
-    return (this._finally = SynchronousPromise.resolve()
-      ._setParent(this)
-      .then(function() {
+    var ran = false;
+    function runFinally() {
+      if (!ran) {
+        ran = true;
         return callback();
-      }));
+      }
+    }
+    return this.then(runFinally)
+      .catch(runFinally);
   },
   pause: function () {
     this._paused = true;
@@ -173,7 +177,7 @@ SynchronousPromise.prototype = {
     });
   },
   _runResolutions: function () {
-    if (this._paused || !this._isResolved()) {
+    if (this._paused || !this._isResolved() || this._isPending()) {
       return;
     }
     var continuations = this._takeContinuations();
