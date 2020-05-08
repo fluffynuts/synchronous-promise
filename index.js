@@ -26,6 +26,10 @@ function looksLikeAPromise(obj) {
   return obj && typeof (obj.then) === "function";
 }
 
+function passThrough(value) {
+  return value;
+}
+
 SynchronousPromise.prototype = {
   then: function (nextFn, catchFn) {
     var next = SynchronousPromise.unresolved()._setParent(this);
@@ -75,14 +79,22 @@ SynchronousPromise.prototype = {
   },
   finally: function(callback) {
     var ran = false;
-    function runFinally() {
+    function runFinally(result) {
       if (!ran) {
         ran = true;
-        return callback();
+        if (!callback) {
+          callback = passThrough;
+        }
+        return callback(result);
       }
     }
-    return this.then(runFinally)
-      .catch(runFinally);
+    return this
+      .then(function(result) {
+        return runFinally(result);
+      })
+      .catch(function(err) {
+        return runFinally(err);
+      });
   },
   pause: function () {
     this._paused = true;
@@ -168,7 +180,6 @@ SynchronousPromise.prototype = {
           var catchResult = cont.catchFn(error);
           self._handleUserFunctionResult(catchResult, cont.promise);
         } catch (e) {
-          var message = e.message;
           cont.promise.reject(e);
         }
       } else {

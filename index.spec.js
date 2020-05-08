@@ -277,6 +277,18 @@ describe("synchronous-promise", function () {
       expect(captured1).to.equal(expected);
       expect(captured2).to.equal(expected);
     });
+
+    describe(`es6 native Promise compatibility`, () => {
+      it(`should pass on the prior result when no function provided`, async () => {
+        // Arrange
+        // Act
+        const result = await SynchronousPromise.resolve("expected")
+          .then();
+        // Assert
+        expect(result)
+          .to.equal("expected");
+      });
+    });
   });
 
   describe("catch", function () {
@@ -673,7 +685,7 @@ describe("synchronous-promise", function () {
     });
 
     it("should resolve with all values from given promise or none promise variable args", function () {
-      const all = SynchronousPromise.all(["123", createResolved("abc")]);
+      const all = SynchronousPromise.all([ "123", createResolved("abc") ]);
       let captured = null;
 
       all.then(function (data) {
@@ -688,7 +700,7 @@ describe("synchronous-promise", function () {
     it("should resolve with all values from given resolved promises as an array", function () {
       const p1 = createResolved("abc"),
         p2 = createResolved("123"),
-        all = SynchronousPromise.all([p1, p2]);
+        all = SynchronousPromise.all([ p1, p2 ]);
       let captured = null;
 
       all.then(function (data) {
@@ -724,14 +736,14 @@ describe("synchronous-promise", function () {
         resolve2 = resolve;
       });
 
-      SynchronousPromise.all([p1, p2]).then(function (data) {
+      SynchronousPromise.all([ p1, p2 ]).then(function (data) {
         captured = data;
       });
 
       resolve2("a");
       resolve1("b");
 
-      expect(captured).to.deep.equal(["b", "a"]);
+      expect(captured).to.deep.equal([ "b", "a" ]);
     });
 
     it("should reject if any promise rejects", function () {
@@ -806,7 +818,7 @@ describe("synchronous-promise", function () {
             }).catch(function (err) {
               error = err;
             }),
-            expected = {key: "value"};
+            expected = { key: "value" };
           // Act
           debugger;
           sut.resolve(expected);
@@ -851,7 +863,7 @@ describe("synchronous-promise", function () {
             }).catch(function (err) {
               error = err;
             }),
-            expected = {key: "value"};
+            expected = { key: "value" };
           // Act
           sut.reject(expected);
           // Assert
@@ -1044,7 +1056,7 @@ describe("synchronous-promise", function () {
         });
         // Assert
         expect(events).to.eql(
-          ["initial", "then", "finally"]
+          [ "initial", "then", "finally" ]
         );
       });
 
@@ -1058,9 +1070,9 @@ describe("synchronous-promise", function () {
             events.push("then1");
             return "then1";
           }).then(result => {
-            events.push(`then2 received: ${result}`);
-            events.push("then2");
-            console.log(events);
+          events.push(`then2 received: ${result}`);
+          events.push("then2");
+          console.log(events);
         }).finally(() => {
           events.push("finally");
         });
@@ -1089,308 +1101,427 @@ describe("synchronous-promise", function () {
         // Arrange
         const events = [];
 
-        const promise = SynchronousPromise.resolve('init')
-          .then((result) => { events.push(`result: ${result}`) })
+        const promise = SynchronousPromise.resolve("init")
+          .then((result) => {
+            events.push(`result: ${result}`)
+          })
           .pause()
-          .then(() => { events.push('resumed') })
-          .finally(() => { events.push('finally') });
-        expect(events).to.eql([ "result: init"]);
+          .then(() => {
+            events.push("resumed")
+          })
+          .finally(() => {
+            events.push("finally")
+          });
+        expect(events).to.eql([ "result: init" ]);
         // Act
         promise.resume();
         // Assert
         expect(events).to.eql([ "result: init", "resumed", "finally" ]);
       });
 
+      it(`should pass the result onto the next .then`, async () => {
+        // Arrange
+        // Act
+        const result = await SynchronousPromise.resolve("expected")
+          .finally(r => r);
+        // Assert
+        expect(result)
+          .to.equal("expected");
+      });
+
+      it(`should pass result onto next .then when no finally handler`, async () => {
+        // Arrange
+        // Act
+        const result = await SynchronousPromise.resolve("expected")
+          .finally();
+        // Assert
+        expect(result).to.equal("expected");
+      });
+
       describe(`imported specs from blalasaadri`, () => {
         // these relate to https://github.com/fluffynuts/synchronous-promise/issues/15
         // reported by https://github.com/blalasaadri
-        describe('SynchronousPromise', () => {
-          describe('new SynchronousPromise', () => {
-            it('calls .then() after being resolved', () => {
+        describe("SynchronousPromise", () => {
+          describe("new SynchronousPromise", () => {
+            it("calls .then() after being resolved", () => {
               const events = [];
 
               new SynchronousPromise((resolve) => {
-                events.push('init');
-                resolve('resolve')
-              }).then(result => { events.push(`result: ${result}`) })
-                .then(() => { events.push('then') });
+                events.push("init");
+                resolve("resolve")
+              }).then(result => {
+                events.push(`result: ${result}`)
+              })
+                .then(() => {
+                  events.push("then")
+                });
 
               expect(events)
-                .to.eql(['init', 'result: resolve', 'then'])
+                .to.eql([ "init", "result: resolve", "then" ])
             });
 
-            it('calls .catch() but not previous .then()s after being rejected', () => {
+            it("calls .catch() but not previous .then()s after being rejected", () => {
               const events = [];
 
               new SynchronousPromise((resolve, reject) => {
-                events.push('init');
-                reject('reject')
-              }).then(result => { events.push(`result: ${result}`) })
-                .then(() => { events.push('then') })
-                .catch(error => { events.push(`error: ${error}`) });
+                events.push("init");
+                reject("reject")
+              }).then(result => {
+                events.push(`result: ${result}`)
+              })
+                .then(() => {
+                  events.push("then")
+                })
+                .catch(error => {
+                  events.push(`error: ${error}`)
+                });
 
               expect(events)
-                .to.eql(['init', 'error: reject'])
+                .to.eql([ "init", "error: reject" ])
             });
 
-            it('calls .finally() after .then()', () => {
+            it("calls .finally() after .then()", () => {
               const events = [];
 
               new SynchronousPromise((resolve) => {
-                resolve('init')
-              }).then(result => { events.push(`result: ${result}`) })
-                .then(() => { events.push('then') })
-                .finally(() => { events.push('finally') });
+                resolve("init")
+              }).then(result => {
+                events.push(`result: ${result}`)
+              })
+                .then(() => {
+                  events.push("then")
+                })
+                .finally(() => {
+                  events.push("finally")
+                });
 
               expect(events)
-                .to.eql(['result: init', 'then', 'finally'])
+                .to.eql([ "result: init", "then", "finally" ])
             });
 
-            it('calls .finally() after .catch()', () => {
+            it("calls .finally() after .catch()", () => {
               const events = [];
 
               new SynchronousPromise((resolve, reject) => {
-                reject('init')
-              }).then(result => { events.push(`result: ${result}`) })
-                .then(() => { events.push('then') })
-                .catch(error => { events.push(`error: ${error}`) })
-                .finally(() => { events.push('finally') });
+                reject("init")
+              }).then(result => {
+                events.push(`result: ${result}`)
+              })
+                .then(() => {
+                  events.push("then")
+                })
+                .catch(error => {
+                  events.push(`error: ${error}`)
+                })
+                .finally(() => {
+                  events.push("finally")
+                });
 
               expect(events)
-                .to.eql(['error: init', 'finally'])
+                .to.eql([ "error: init", "finally" ])
             })
           });
 
-          describe('SynchronousPromise.unresolved', () => {
-            describe('calls .then() only after being resolved', () => {
-              it('calls nothing before promise.resolve is called', () => {
+          describe("SynchronousPromise.unresolved", () => {
+            describe("calls .then() only after being resolved", () => {
+              it("calls nothing before promise.resolve is called", () => {
                 const events = [];
 
                 SynchronousPromise.unresolved()
-                  .then((result) => { events.push(`result: ${result}`) })
-                  .then(() => { events.push('then') });
+                  .then((result) => {
+                    events.push(`result: ${result}`)
+                  })
+                  .then(() => {
+                    events.push("then")
+                  });
 
                 expect(events).to.eql([])
               });
 
-              it('calls .then() once promise.resolve is called', () => {
+              it("calls .then() once promise.resolve is called", () => {
                 const events = [];
 
                 const promise = SynchronousPromise.unresolved()
-                  .then((result) => { events.push(`result: ${result}`) })
-                  .then(() => { events.push('then') });
-                promise.resolve('resolve');
+                  .then((result) => {
+                    events.push(`result: ${result}`)
+                  })
+                  .then(() => {
+                    events.push("then")
+                  });
+                promise.resolve("resolve");
 
-                expect(events).to.eql(['result: resolve', 'then'])
+                expect(events).to.eql([ "result: resolve", "then" ])
               })
             });
 
-            it('calls .catch() but not previous .then()s after being rejected', () => {
+            it("calls .catch() but not previous .then()s after being rejected", () => {
               const events = [];
 
               const promise = SynchronousPromise.unresolved()
-                .then((result) => { events.push(`result: ${result}`) })
-                .then(() => { events.push('then') })
-                .catch(error => { events.push(`error: ${error}`) });
-              promise.reject('reject');
+                .then((result) => {
+                  events.push(`result: ${result}`)
+                })
+                .then(() => {
+                  events.push("then")
+                })
+                .catch(error => {
+                  events.push(`error: ${error}`)
+                });
+              promise.reject("reject");
 
               expect(events)
-                .to.eql(['error: reject'])
+                .to.eql([ "error: reject" ])
             });
 
-            describe('calls .finally() after .then()', () => {
-              it('calls nothing before promise.resolve is called', () => {
+            describe("calls .finally() after .then()", () => {
+              it("calls nothing before promise.resolve is called", () => {
                 const events = [];
 
                 SynchronousPromise.unresolved()
-                  .then((result) => { events.push(`result: ${result}`) })
-                  .then(() => { events.push('then') })
-                  .finally(() => { events.push('finally') });
+                  .then((result) => {
+                    events.push(`result: ${result}`)
+                  })
+                  .then(() => {
+                    events.push("then")
+                  })
+                  .finally(() => {
+                    events.push("finally")
+                  });
 
                 expect(events)
-                  .not.to.contain('finally');
+                  .not.to.contain("finally");
                 expect(events)
                   .to.eql([])
               });
 
-              it('calls .then() and .finally() once promise.resolve is called', () => {
+              it("calls .then() and .finally() once promise.resolve is called", () => {
                 const events = [];
 
                 const promise = SynchronousPromise.unresolved()
-                  .then((result) => { events.push(`result: ${result}`) })
-                  .then(() => { events.push('then') })
-                  .finally(() => { events.push('finally') });
-                promise.resolve('resolve');
+                  .then((result) => {
+                    events.push(`result: ${result}`)
+                  })
+                  .then(() => {
+                    events.push("then")
+                  })
+                  .finally(() => {
+                    events.push("finally")
+                  });
+                promise.resolve("resolve");
 
                 expect(events)
-                  .not.to.eql(['finally', 'result: undefined', 'then']);
+                  .not.to.eql([ "finally", "result: undefined", "then" ]);
                 expect(events)
-                  .to.eql(['result: resolve', 'then', 'finally'])
+                  .to.eql([ "result: resolve", "then", "finally" ])
               })
             });
 
-            describe('calls .finally() after .catch()', () => {
-              it('calls nothing before promise.reject is called', () => {
+            describe("calls .finally() after .catch()", () => {
+              it("calls nothing before promise.reject is called", () => {
                 const events = [];
 
                 SynchronousPromise.unresolved()
-                  .then((result) => { events.push(`result: ${result}`) })
-                  .catch(() => { events.push('catch') })
-                  .finally(() => { events.push('finally') });
+                  .then((result) => {
+                    events.push(`result: ${result}`)
+                  })
+                  .catch(() => {
+                    events.push("catch")
+                  })
+                  .finally(() => {
+                    events.push("finally")
+                  });
 
                 expect(events)
-                  .not.to.contain('finally');
+                  .not.to.contain("finally");
                 expect(events)
                   .to.eql([])
               });
 
-              it('calls .catch() and .finally() once promise.reject is called', () => {
+              it("calls .catch() and .finally() once promise.reject is called", () => {
                 const events = [];
 
                 const promise = SynchronousPromise.unresolved()
-                  .then((result) => { events.push(`result: ${result}`) })
-                  .catch((error) => { events.push(`error: ${error}`) })
-                  .finally(() => { events.push('finally') });
-                promise.reject('reject');
+                  .then((result) => {
+                    events.push(`result: ${result}`)
+                  })
+                  .catch((error) => {
+                    events.push(`error: ${error}`)
+                  })
+                  .finally(() => {
+                    events.push("finally")
+                  });
+                promise.reject("reject");
 
                 expect(events)
-                  .not.to.eql(['finally', 'result: undefined']);
+                  .not.to.eql([ "finally", "result: undefined" ]);
                 expect(events)
-                  .to.eql(['error: reject', 'finally'])
+                  .to.eql([ "error: reject", "finally" ])
               })
             })
           });
 
-          describe('SynchronousPromise.resolve(...).pause', () => {
-            describe('calls .then() only after being resolved', () => {
-              it('calls nothing after the initial initialization before promise.resume is called', () => {
+          describe("SynchronousPromise.resolve(...).pause", () => {
+            describe("calls .then() only after being resolved", () => {
+              it("calls nothing after the initial initialization before promise.resume is called", () => {
                 const events = [];
 
-                SynchronousPromise.resolve('init')
-                  .then((result) => { events.push(`result: ${result}`) })
+                SynchronousPromise.resolve("init")
+                  .then((result) => {
+                    events.push(`result: ${result}`)
+                  })
                   .pause()
-                  .then(() => { events.push('resumed') });
+                  .then(() => {
+                    events.push("resumed")
+                  });
 
                 expect(events)
-                  .to.eql(['result: init'])
+                  .to.eql([ "result: init" ])
               });
 
-              it('calls .then() after the inital initialization after promise.resume is called', () => {
+              it("calls .then() after the inital initialization after promise.resume is called", () => {
                 const events = [];
 
-                const promise = SynchronousPromise.resolve('init')
-                  .then((result) => { events.push(`result: ${result}`) })
+                const promise = SynchronousPromise.resolve("init")
+                  .then((result) => {
+                    events.push(`result: ${result}`)
+                  })
                   .pause()
-                  .then(() => { events.push('resumed') });
+                  .then(() => {
+                    events.push("resumed")
+                  });
                 promise.resume();
 
                 expect(events)
-                  .to.eql(['result: init', 'resumed'])
+                  .to.eql([ "result: init", "resumed" ])
               })
             });
 
-            describe('calls .catch() only after being resolved', () => {
-              it('calls nothing after the inital initialization before promise.resume is called', () => {
+            describe("calls .catch() only after being resolved", () => {
+              it("calls nothing after the inital initialization before promise.resume is called", () => {
                 const events = [];
 
-                SynchronousPromise.resolve('init')
+                SynchronousPromise.resolve("init")
                   .then((result) => {
                     events.push(`result: ${result}`);
-                    throw Error('resumed')
+                    throw Error("resumed")
                   })
                   .pause()
-                  .catch(({ message }) => { events.push(`catch: ${message}`) });
+                  .catch(({ message }) => {
+                    events.push(`catch: ${message}`)
+                  });
 
                 expect(events)
-                  .to.eql(['result: init'])
+                  .to.eql([ "result: init" ])
               });
 
-              it('calls .catch() after the inital initialization after promise.resume is called', () => {
+              it("calls .catch() after the inital initialization after promise.resume is called", () => {
                 const events = [];
 
-                const promise = SynchronousPromise.resolve('init')
+                const promise = SynchronousPromise.resolve("init")
                   .then((result) => {
                     events.push(`result: ${result}`);
-                    throw Error('resumed')
+                    throw Error("resumed")
                   })
                   .pause()
-                  .catch(({ message }) => { events.push(`catch: ${message}`) });
+                  .catch(({ message }) => {
+                    events.push(`catch: ${message}`)
+                  });
                 promise.resume();
 
                 expect(events)
-                  .to.eql(['result: init', 'catch: resumed'])
+                  .to.eql([ "result: init", "catch: resumed" ])
               })
             });
 
-            describe('calls .finally() after .then()', () => {
-              it('calls nothing before promise.resume is called', () => {
+            describe("calls .finally() after .then()", () => {
+              it("calls nothing before promise.resume is called", () => {
                 const events = [];
 
-                SynchronousPromise.resolve('init')
-                  .then((result) => { events.push(`result: ${result}`) })
+                SynchronousPromise.resolve("init")
+                  .then((result) => {
+                    events.push(`result: ${result}`)
+                  })
                   .pause()
-                  .then(() => { events.push('resumed') })
-                  .finally(() => { events.push('finally') });
+                  .then(() => {
+                    events.push("resumed")
+                  })
+                  .finally(() => {
+                    events.push("finally")
+                  });
 
                 expect(events)
-                  .not.to.contain('finally');
+                  .not.to.contain("finally");
                 expect(events)
-                  .to.eql(['result: init'])
+                  .to.eql([ "result: init" ])
               });
 
-              it('calls .then() and .finally() once promise.resume is called', () => {
+              it("calls .then() and .finally() once promise.resume is called", () => {
                 const events = [];
 
-                const promise = SynchronousPromise.resolve('init')
-                  .then((result) => { events.push(`result: ${result}`) })
+                const promise = SynchronousPromise.resolve("init")
+                  .then((result) => {
+                    events.push(`result: ${result}`)
+                  })
                   .pause()
-                  .then(() => { events.push('resumed') })
-                  .finally(() => { events.push('finally') });
+                  .then(() => {
+                    events.push("resumed")
+                  })
+                  .finally(() => {
+                    events.push("finally")
+                  });
                 promise.resume();
 
                 expect(events)
-                  .not.to.eql(['result: init', 'finally', 'resumed']);
+                  .not.to.eql([ "result: init", "finally", "resumed" ]);
                 expect(events)
-                  .to.eql(['result: init', 'resumed', 'finally'])
+                  .to.eql([ "result: init", "resumed", "finally" ])
               })
             });
 
-            describe('calls .finally() after .catch()', () => {
-              it('calls nothing before promise.resume is called', () => {
+            describe("calls .finally() after .catch()", () => {
+              it("calls nothing before promise.resume is called", () => {
                 const events = [];
 
-                SynchronousPromise.resolve('init')
+                SynchronousPromise.resolve("init")
                   .then((result) => {
                     events.push(`result: ${result}`);
-                    throw Error('resumed')
+                    throw Error("resumed")
                   })
                   .pause()
-                  .catch(({ message }) => { events.push(`catch: ${message}`) })
-                  .finally(() => { events.push('finally') });
+                  .catch(({ message }) => {
+                    events.push(`catch: ${message}`)
+                  })
+                  .finally(() => {
+                    events.push("finally")
+                  });
 
                 expect(events)
-                  .not.to.contain('finally');
+                  .not.to.contain("finally");
                 expect(events)
-                  .to.eql(['result: init'])
+                  .to.eql([ "result: init" ])
               });
 
-              it('calls .catch() and .finally() once promise.resume is called', () => {
+              it("calls .catch() and .finally() once promise.resume is called", () => {
                 const events = [];
 
-                const promise = SynchronousPromise.resolve('init')
+                const promise = SynchronousPromise.resolve("init")
                   .then((result) => {
                     events.push(`result: ${result}`);
-                    throw Error('resumed')
+                    throw Error("resumed")
                   })
                   .pause()
-                  .catch(({ message }) => { events.push(`catch: ${message}`) })
-                  .finally(() => { events.push('finally') });
+                  .catch(({ message }) => {
+                    events.push(`catch: ${message}`)
+                  })
+                  .finally(() => {
+                    events.push("finally")
+                  });
                 promise.resume();
 
                 expect(events)
-                  .not.to.eql(['result: init', 'finally', 'catch: resumed']);
+                  .not.to.eql([ "result: init", "finally", "catch: resumed" ]);
                 expect(events)
-                  .to.eql(['result: init', 'catch: resumed', 'finally'])
+                  .to.eql([ "result: init", "catch: resumed", "finally" ])
               })
             })
           })
