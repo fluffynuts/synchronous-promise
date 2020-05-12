@@ -79,13 +79,23 @@ SynchronousPromise.prototype = {
   },
   finally: function(callback) {
     var ran = false;
-    function runFinally(result) {
+    function runFinally(result, err) {
       if (!ran) {
         ran = true;
         if (!callback) {
           callback = passThrough;
         }
-        return callback(result);
+        var callbackResult = callback(result);
+        if (looksLikeAPromise(callbackResult)) {
+          return callbackResult.then(function() {
+            if (err) {
+              throw err;
+            }
+            return result;
+          });
+        } else {
+          return result;
+        }
       }
     }
     return this
@@ -93,7 +103,7 @@ SynchronousPromise.prototype = {
         return runFinally(result);
       })
       .catch(function(err) {
-        return runFinally(err);
+        return runFinally(null, err);
       });
   },
   pause: function () {
