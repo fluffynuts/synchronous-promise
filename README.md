@@ -5,6 +5,8 @@ immediately, so can run synchronously, for testing. Technically, this makes it
 
 This means that I unfortunately can't run the official tests at [https://github.com/promises-aplus/promises-tests](https://github.com/promises-aplus/promises-tests). As such, I rely on issue reports from users and welcome contributions.
 
+![Build and Test](https://github.com/fluffynuts/synchronous-promise/workflows/Tests/badge.svg)
+
 ### Why?
 The standard ES6 Promise (and any others which *are* A+ compliant) push the promise logic to the background
 immediately, departing from the mechanisms employed in years past by promise
