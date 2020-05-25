@@ -7,6 +7,8 @@ This means that I unfortunately can't run the official tests at [https://github.
 
 ![Build and Test](https://github.com/fluffynuts/synchronous-promise/workflows/Tests/badge.svg)
 
+![npm](https://img.shields.io/npm/v/synchronous-promise)
+
 ### Why?
 The standard ES6 Promise (and any others which *are* A+ compliant) push the promise logic to the background
 immediately, departing from the mechanisms employed in years past by promise
