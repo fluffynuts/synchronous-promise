@@ -346,6 +346,43 @@ SynchronousPromise.all = function () {
   });
 };
 
+SynchronousPromise.any = function () {
+  var args = makeArrayFrom(arguments);
+  if (Array.isArray(args[0])) {
+    args = args[0];
+  }
+  if (!args.length) {
+    return SynchronousPromise.reject({errors: []});
+  }
+  return new SynchronousPromise(function (resolve, reject) {
+    var
+      allErrors = [],
+      numRejected = 0,
+      doReject = function () {
+        if (numRejected === args.length) {
+          reject({errors: allErrors});
+        }
+      },
+      resolved = false,
+      doResolve = function (result) {
+        if (resolved) {
+          return;
+        }
+        resolved = true;
+        resolve(result);
+      };
+    args.forEach(function (arg, idx) {
+      SynchronousPromise.resolve(arg).then(function (thisResult) {
+        doResolve(thisResult);
+      }).catch(function (err) {
+        allErrors[idx] = err;
+        numRejected += 1;
+        doReject();
+      });
+    });
+  });
+};
+
 /* jshint ignore:start */
 if (Promise === SynchronousPromise) {
   throw new Error("Please use SynchronousPromise.installGlobally() to install globally");
