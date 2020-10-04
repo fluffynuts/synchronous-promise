@@ -761,6 +761,122 @@ describe("synchronous-promise", function () {
       expect(capturedError).to.equal("123");
     });
   });
+
+  describe("static allSettled", function () {
+    it("should be a function", function () {
+      expect(SynchronousPromise.allSettled).to.be.a("function")
+    });
+
+    it("should resolve with all values from given resolved promises as variable args", function () {
+      const p1 = createResolved("abc"),
+        p2 = createResolved("123"),
+        allSettled = SynchronousPromise.allSettled(p1, p2);
+      let captured = null;
+
+      allSettled.then(function (data) {
+        captured = data;
+      });
+
+      expect(captured).to.have.length(2);
+      expect(captured).to.deep.contain({ status: "fulfilled", value: "abc" });
+      expect(captured).to.deep.contain({ status: "fulfilled", value: "123" });
+    });
+
+    it("should resolve with all values from given rejected promises as variable args", function () {
+      const error1 = new Error("error1");
+      const error2 = new Error("error2");
+      const p1 = createRejected(error1),
+        p2 = createRejected(error2),
+        allSettled = SynchronousPromise.allSettled(p1, p2);
+      let captured = null;
+
+      allSettled.then(function (data) {
+        captured = data;
+      });
+
+      expect(captured).to.have.length(2);
+      expect(captured).to.deep.contain({ status: "rejected", reason: error1 });
+      expect(captured).to.deep.contain({ status: "rejected", reason: error2 });
+    });
+
+    it("should resolve with all values from given promise or none promise variable args", function () {
+      const allSettled = SynchronousPromise.allSettled(["123", createResolved("abc")]);
+      let captured = null;
+
+      allSettled.then(function (data) {
+        captured = data;
+      });
+
+      expect(captured).to.have.length(2);
+      expect(captured).to.deep.contain({ status: "fulfilled", value: "abc" });
+      expect(captured).to.deep.contain({ status: "fulfilled", value: "123" });
+    });
+
+    it("should resolve with all values from given resolved promises as an array", function () {
+      const p1 = createResolved("abc"),
+        p2 = createResolved("123"),
+        allSettled = SynchronousPromise.allSettled([p1, p2]);
+      let captured = null;
+
+      allSettled.then(function (data) {
+        captured = data;
+      });
+
+      expect(captured).to.have.length(2);
+      expect(captured).to.deep.contain({ status: "fulfilled", value: "abc" });
+      expect(captured).to.deep.contain({ status: "fulfilled", value: "123" });
+    });
+
+    it("should resolve empty promise array", function () {
+      const allSettled = SynchronousPromise.allSettled([]);
+      let captured = null;
+
+      allSettled.then(function (data) {
+        captured = data;
+      });
+
+      expect(captured).to.have.length(0);
+    });
+
+    it("should resolve with values in the correct order", function () {
+      let resolve1 = undefined,
+        resolve2 = undefined,
+        captured = undefined;
+
+      const p1 = create(function (resolve) {
+        resolve1 = resolve;
+      });
+
+      const p2 = create(function (resolve) {
+        resolve2 = resolve;
+      });
+
+      SynchronousPromise.allSettled([p1, p2]).then(function (data) {
+        captured = data;
+      });
+
+      resolve2("a");
+      resolve1("b");
+
+      expect(captured).to.deep.equal([
+        { status: "fulfilled", value: "b" },
+        { status: "fulfilled", value: "a" }
+      ]);
+    });
+
+    it("should only resolve after all promises are settled", function () {
+      const p1 = createResolved("abc"),
+        p2 = createRejected("123"),
+        allSettled = SynchronousPromise.allSettled(p1, p2);
+      let capturedData = null;
+      allSettled.then(function (data) {
+        capturedData = data;
+      });
+
+      expect(capturedData).to.have.length(2);
+    });
+  });
+
   describe("static unresolved", function () {
     it("should exist as a function", function () {
       // Arrange
