@@ -21,11 +21,17 @@ export interface SynchronousPromiseConstructor {
   /**
     * Creates a Promise that is resolved with an array of results when all of the provided Promises
     * resolve, or rejected when any Promise is rejected.
-    * @param values An array of Promises.
+    * @param v1 An array of Promises
     * @returns A new Promise.
     */
   all<T>(v1: ValueOrPromiseOfValue<T>[]): SynchronousPromise<T[]>;
-  all<TAll>(...values: ValueOrPromiseOfValue<TAll>[]): SynchronousPromise<TAll[]>;
+  /**
+   * Creates a Promise that is resolved with an array of results when all of the provided Promises
+   * resolve, or rejected when any Promise is rejected.
+   * @param values Any number of Promises.
+   * @returns A new Promise.
+   */
+  all<T>(...values: ValueOrPromiseOfValue<T>[]): SynchronousPromise<T[]>;
 
   /**
     * Creates a Promise that is resolved or rejected when any of the provided Promises are resolved
@@ -34,6 +40,19 @@ export interface SynchronousPromiseConstructor {
     * @returns A new Promise.
     */
   // race<T>(values: IterableShim<T | PromiseLike<T>>): Promise<T>;
+
+  /**
+   * Creates a Promise that is resolved with the first value from the provided
+   * Promises, or rejected when all provided Promises reject
+    * @param v1 An array of Promises
+   */
+  any<T>(v1: ValueOrPromiseOfValue<T>[]): SynchronousPromise<T>;
+  /**
+   * Creates a Promise that is resolved with the first value from the provided
+   * Promises, or rejected when all provided Promises reject
+   * @param values Any number of Promises
+   */
+  any<T>(...values: ValueOrPromiseOfValue<T>[]): SynchronousPromise<T>;
 
   /**
     * Creates a new rejected promise for the provided reason.
@@ -70,7 +89,7 @@ export interface SynchronousPromiseConstructor {
 
 
   /**
-    * Installs SynchronousPromise as the global Promise implementation. 
+    * Installs SynchronousPromise as the global Promise implementation.
     * When running from within typescript, you will need to use this to
     * patch the generated __awaiter to ensure it gets a _real_ Promise implementation
     * (see https://github.com/Microsoft/TypeScript/issues/19909).
