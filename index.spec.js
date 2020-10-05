@@ -761,6 +761,110 @@ describe("synchronous-promise", function () {
       expect(capturedError).to.equal("123");
     });
   });
+  describe("static any", function () {
+    it("should be a function", function () {
+      expect(SynchronousPromise.any).to.be.a("function")
+    });
+
+    it("should resolve with first value from given resolved promises as variable args", function () {
+      const p1 = createResolved("abc"),
+        p2 = createResolved("123"),
+        any = SynchronousPromise.any(p1, p2);
+      let captured = null;
+
+      any.then(function (data) {
+        captured = data;
+      });
+
+      expect(captured).to.equal("abc");
+    });
+
+    it("should resolve with first value from given promise or none promise variable args", function () {
+      const any = SynchronousPromise.any(["123", createResolved("abc")]);
+      let captured = null;
+
+      any.then(function (data) {
+        captured = data;
+      });
+
+      expect(captured).to.equal("123");
+    });
+
+    it("should reject empty promise array", function () {
+      const any = SynchronousPromise.any([]);
+      let capturedData = null,
+        capturedError = null;
+
+      any.then(function (data) {
+        capturedData = data;
+      }, function (err) {
+        capturedError = err;
+      });
+
+      expect(capturedData).to.be.null;
+      expect(capturedError).to.have.property("errors");
+      expect(capturedError).property("errors").to.have.length(0);
+    });
+
+    it("should resolve if any promise resolves", function () {
+      const p1 = createResolved("abc"),
+        p2 = createRejected("123"),
+        any = SynchronousPromise.any(p1, p2);
+      let capturedData = null,
+        capturedError = null;
+      any.then(function (data) {
+        capturedData = data;
+      }).catch(function (err) {
+        capturedError = err;
+      });
+      
+      expect(capturedData).to.equal("abc");
+      expect(capturedError).to.be.null;
+    });
+
+    it("should reject if all promises reject", function () {
+      const p1 = createRejected("abc"),
+        p2 = createRejected("123"),
+        any = SynchronousPromise.any(p1, p2);
+      let capturedData = null,
+        capturedError = null;
+      any.then(function (data) {
+        capturedData = data;
+      }).catch(function (err) {
+        capturedError = err;
+      });
+
+      expect(capturedData).to.be.null;
+      expect(capturedError).to.have.property("errors");
+      expect(capturedError).property("errors").to.have.length(2);
+      expect(capturedError).property("errors").to.contain("abc");
+      expect(capturedError).property("errors").to.contain("123");
+    });
+    
+    it("should reject with values in the correct order", function () {
+      let reject1 = undefined,
+        reject2 = undefined,
+        capturedError = undefined;
+
+      const p1 = create(function (resolve, reject) {
+        reject1 = reject;
+      });
+
+      const p2 = create(function (resolve, reject) {
+        reject2 = reject;
+      });
+
+      SynchronousPromise.any([p1, p2]).catch(function (data) {
+        capturedError = data;
+      });
+
+      reject2("a");
+      reject1("b");
+
+      expect(capturedError).to.have.property("errors");
+      expect(capturedError).property("errors").to.deep.equal(["b", "a"]);
+    });
+  });
   describe("static unresolved", function () {
     it("should exist as a function", function () {
       // Arrange
