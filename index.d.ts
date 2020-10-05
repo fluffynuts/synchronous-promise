@@ -4,6 +4,16 @@ export interface SynchronousPromise<T> extends Promise<T> {
 }
 
 export type ValueOrPromiseOfValue<T> = T | PromiseLike<T>
+export type RejectedOutcome = {
+  status: "rejected",
+  reason: any
+}
+export type FulfilledOutcome<T> = {
+  status: "fulfilled",
+  value: T
+}
+export type SettledOutcome<T> = FulfilledOutcome<T> | RejectedOutcome
+
 export interface SynchronousPromiseConstructor {
   /**
     * A reference to the prototype.
@@ -32,6 +42,23 @@ export interface SynchronousPromiseConstructor {
    * @returns A new Promise.
    */
   all<T>(...values: ValueOrPromiseOfValue<T>[]): SynchronousPromise<T[]>;
+
+  /**
+    * Creates a Promise that is resolved with an array of outcome objects after all of the provided Promises
+    * have settled. Each outcome object has a .status of either "fulfilled" or "rejected" and corresponding
+    * "value" or "reason" properties.
+    * @param v1 An array of Promises.
+    * @returns A new Promise.
+    */
+  allSettled<T>(v1: ValueOrPromiseOfValue<T>[]): SynchronousPromise<SettledOutcome<T>[]>;
+  /**
+   * Creates a Promise that is resolved with an array of outcome objects after all of the provided Promises
+   * have settled. Each outcome object has a .status of either "fulfilled" or "rejected" and corresponding
+   * "value" or "reason" properties.
+   * @param values Any number of promises
+   * @returns A new Promise.
+   */
+  allSettled<TAllSettled>(...values: ValueOrPromiseOfValue<TAllSettled>[]): SynchronousPromise<SettledOutcome<TAllSettled>[]>;
 
   /**
     * Creates a Promise that is resolved or rejected when any of the provided Promises are resolved
