@@ -847,15 +847,15 @@ describe("synchronous-promise", function () {
       /** Mock of AggregateError */
       class AggregateError extends Error {
         constructor(errors, message) {
-          super(message)
-          this.name = "AggregateError"
-          this.errors = errors
+          super(message);
+          this.name = "AggregateError";
+          this.errors = errors;
         }
       }
 
       // Mock window object with AggregateError
-      const windowRef = global.window
-      global.window = { AggregateError }
+      const windowRef = global.window;
+      global.window = { AggregateError };
 
       // Test with only rejected promises
       const p1 = createRejected("abc"),
@@ -872,11 +872,11 @@ describe("synchronous-promise", function () {
         capturedErrorEmpty = err;
       })
 
-      expect(capturedError).to.be.instanceOf(AggregateError)
-      expect(capturedErrorEmpty).to.be.instanceOf(AggregateError)
+      expect(capturedError).to.be.instanceOf(AggregateError);
+      expect(capturedErrorEmpty).to.be.instanceOf(AggregateError);
 
       // Restore window object
-      global.window = windowRef
+      global.window = windowRef;
     });
 
     it("should reject with values in the correct order", function () {
