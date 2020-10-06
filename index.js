@@ -356,6 +356,12 @@ SynchronousPromise.any = function () {
     args = args[0];
   }
   if (!args.length) {
+    /* jshint ignore:start */
+    if (typeof window !== "undefined" && "AggregateError" in window) {
+     return SynchronousPromise.reject(new window.AggregateError([]));
+    }
+    /* jshint ignore:end */
+
     return SynchronousPromise.reject({ errors: [] });
   }
   return new SynchronousPromise(function (resolve, reject) {
@@ -364,6 +370,13 @@ SynchronousPromise.any = function () {
       numRejected = 0,
       doReject = function () {
         if (numRejected === args.length) {
+          /* jshint ignore:start */
+          if (typeof window !== "undefined" && "AggregateError" in window) {
+            reject(new window.AggregateError(allErrors));
+            return;
+          }
+          /* jshint ignore:end */
+
           reject({ errors: allErrors });
         }
       },
