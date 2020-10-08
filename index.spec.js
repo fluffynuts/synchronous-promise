@@ -865,6 +865,54 @@ describe("synchronous-promise", function () {
       expect(capturedError).to.have.property("errors");
       expect(capturedError).property("errors").to.deep.equal(["b", "a"]);
     });
+
+    describe("in browsers supporting AggregateError", function() {
+
+      // Used to restore previous global.window value
+      let windowRef = null;
+  
+      /** Mock of AggregateError */
+      class AggregateError extends Error {
+        constructor(errors, message) {
+          super(message);
+          this.name = "AggregateError";
+          this.errors = errors;
+        }
+      }
+  
+      beforeEach(function() {
+        // Mock window object with AggregateError
+        windowRef = global.window;
+        global.window = { AggregateError };
+      });
+  
+      afterEach(function () {
+        // Restore window object
+        global.window = windowRef;
+        windowRef = null;
+      });
+  
+      it("should reject with AggregateError for empty promise array", function () {
+        const anyEmpty = SynchronousPromise.any([]);
+        let capturedError = null;
+        anyEmpty.catch(function (err) {
+          capturedError = err;
+        });
+
+        expect(capturedError).to.be.instanceOf(AggregateError);
+      });
+
+      it("should reject with AggregateError for rejected promises as variable args", function () {
+        const p1 = createRejected("abc"),
+          any = SynchronousPromise.any(p1);
+        let capturedError = null;
+        any.catch(function (err) {
+          capturedError = err;
+        });
+  
+        expect(capturedError).to.be.instanceOf(AggregateError);
+      });
+    });
   });
 
   describe("static allSettled", function () {
