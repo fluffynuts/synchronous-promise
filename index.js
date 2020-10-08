@@ -350,19 +350,23 @@ SynchronousPromise.all = function () {
   });
 };
 
+function createAggregateErrorFrom(errors) {
+  /* jshint ignore:start */
+  if (typeof window !== "undefined" && "AggregateError" in window) {
+    return new window.AggregateError(errors);
+  }
+  /* jshint ignore:end */
+
+  return { errors: errors };
+}
+
 SynchronousPromise.any = function () {
   var args = makeArrayFrom(arguments);
   if (Array.isArray(args[0])) {
     args = args[0];
   }
   if (!args.length) {
-    /* jshint ignore:start */
-    if (typeof window !== "undefined" && "AggregateError" in window) {
-     return SynchronousPromise.reject(new window.AggregateError([]));
-    }
-    /* jshint ignore:end */
-
-    return SynchronousPromise.reject({ errors: [] });
+    return SynchronousPromise.reject(createAggregateErrorFrom([]));
   }
   return new SynchronousPromise(function (resolve, reject) {
     var
@@ -370,14 +374,7 @@ SynchronousPromise.any = function () {
       numRejected = 0,
       doReject = function () {
         if (numRejected === args.length) {
-          /* jshint ignore:start */
-          if (typeof window !== "undefined" && "AggregateError" in window) {
-            reject(new window.AggregateError(allErrors));
-            return;
-          }
-          /* jshint ignore:end */
-
-          reject({ errors: allErrors });
+          reject(createAggregateErrorFrom(allErrors));
         }
       },
       resolved = false,
