@@ -870,7 +870,7 @@ describe("synchronous-promise", function () {
 
       // Used to restore previous global.window value
       let windowRef = null;
-  
+
       /** Mock of AggregateError */
       class AggregateError extends Error {
         constructor(errors, message) {
@@ -879,19 +879,21 @@ describe("synchronous-promise", function () {
           this.errors = errors;
         }
       }
-  
+
       beforeEach(function() {
         // Mock window object with AggregateError
         windowRef = global.window;
+        // noinspection JSConstantReassignment
         global.window = { AggregateError };
       });
-  
+
       afterEach(function () {
         // Restore window object
+        // noinspection JSConstantReassignment
         global.window = windowRef;
         windowRef = null;
       });
-  
+
       it("should reject with AggregateError for empty promise array", function () {
         const anyEmpty = SynchronousPromise.any([]);
         let capturedError = null;
@@ -909,7 +911,7 @@ describe("synchronous-promise", function () {
         any.catch(function (err) {
           capturedError = err;
         });
-  
+
         expect(capturedError).to.be.instanceOf(AggregateError);
       });
     });
