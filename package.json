@@ -1,8 +1,15 @@
 {
   "name": "synchronous-promise",
-  "version": "2.0.15",
+  "version": "2.0.16",
   "description": "Synchronous Promise-like prototype to use in testing where you would have used an ES6 Promise",
   "main": "index.js",
+  "files": [
+    "browser.js",
+    "index.d.ts",
+    "index.js",
+    "LICENSE",
+    "README.md"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/fluffynuts/synchronous-promise.git"

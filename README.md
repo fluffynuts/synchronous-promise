@@ -9,6 +9,9 @@ This means that I unfortunately can't run the official tests at [https://github.
 
 ![npm](https://img.shields.io/npm/v/synchronous-promise)
 
+If `synchronous-promise` has made something easier for you and you'd like to say thanks,
+[check out my sponsors page](https://github.com/sponsors/fluffynuts).
+
 ### Why?
 The standard ES6 Promise (and any others which *are* A+ compliant) push the promise logic to the background
 immediately, departing from the mechanisms employed in years past by promise
@@ -170,9 +173,9 @@ var
   resolvedValue,
   rejectedValue,
   promise = SynchronousPromise.unresolved().then(function(data) {
-    resolved = data;
+    resolvedValue = data;
   }).catch(function(data) {
-    rejected = data;
+    rejectedValue = data;
   });
   // at this point, resolved and rejected are both undefined
 
@@ -277,7 +280,7 @@ code, but this works.
 
 I have an issue open on GitHub
 [https://github.com/Microsoft/TypeScript/issues/19909](https://github.com/Microsoft/TypeScript/issues/19909)
-but discussion so far has not beein particularly convincing that
+but discussion so far has not been particularly convincing that
 TypeScript emission will be altered to (imo) a more robust
 implementation which wraps the emitted `__awaiter` in a closure.
 
@@ -290,7 +293,7 @@ always-backgrounded behaviour. One might be tempted to just use it everywhere.
 **However**: I'd highly recommend using *any* of the more venerable promise implementations
 instead of SynchronousPromise in your production code -- preferably the vanilla
 ES6 Promise, where possible (or the shim, where you're in ES5). Or Q.
-Or jQUery.Deferred(), Bluebird or any of the implementations at [https://promisesaplus.com/implementations](https://promisesaplus.com/implementations).
+Or jQuery.Deferred(), Bluebird or any of the implementations at [https://promisesaplus.com/implementations](https://promisesaplus.com/implementations).
 
 Basically, this seems to work quite well for testing and
 I've tried to implement every behaviour I'd expect from a promise -- but I'm
