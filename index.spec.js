@@ -90,7 +90,6 @@ describe("synchronous-promise", function () {
       sut.then(function () {
         throw new Error(error1);
       }).catch(function (err) {
-        debugger;
         throw new Error(err.message + "-cow");
       }).catch(function (err) {
         received = err.message;
@@ -1091,7 +1090,6 @@ describe("synchronous-promise", function () {
             }),
             expected = {key: "value"};
           // Act
-          debugger;
           sut.resolve(expected);
           // Assert
           expect(resolved).to.equal(expected);
@@ -1363,7 +1361,6 @@ describe("synchronous-promise", function () {
         // Act
         SynchronousPromise.unresolved()
           .then(result => {
-            debugger;
             events.push(`result: ${result}`)
           })
           .catch(() => events.push("catch"))
@@ -1813,6 +1810,47 @@ describe("synchronous-promise", function () {
         })
       });
 
+      describe(`github issue #39`, () => {
+        function sleep(ms) {
+          return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        it(`should run the body of synchronous promises returned from promise executors`, async () => {
+          // Arrange
+          // Act
+          let record;
+
+          function test(PromiseImpl) {
+            const delay = new PromiseImpl((resolve) => {
+              record.push("delay body called");
+              setTimeout(() => resolve(), 50);
+            });
+            delay.then(() => record.push("delay is fulfilled"))
+            const resolvedWithPromise = new PromiseImpl((resolve) => {
+              record.push("resolvedWithPromise body called");
+              return resolve(delay);
+            }).then(() => { record.push("after resolvedWithPromise");});
+            resolvedWithPromise.then(() => record.push("resolvedWithPromise is fulfilled"))
+          }
+
+          record = [];
+          test(Promise);
+          await sleep(100);
+          expect(record).to.contain("delay body called");
+          expect(record).to.contain("delay is fulfilled");
+          expect(record).to.contain("resolvedWithPromise body called");
+          expect(record).to.contain("after resolvedWithPromise");
+          expect(record).to.contain("resolvedWithPromise is fulfilled");
+          test(SynchronousPromise);
+          await sleep(100);
+          expect(record).to.contain("delay body called");
+          expect(record).to.contain("delay is fulfilled");
+          expect(record).to.contain("resolvedWithPromise body called");
+          expect(record).to.contain("after resolvedWithPromise");
+          expect(record).to.contain("resolvedWithPromise is fulfilled");
+          // Assert
+        });
+      });
     });
   });
 });
