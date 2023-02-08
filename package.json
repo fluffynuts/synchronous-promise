@@ -17,8 +17,8 @@
   "scripts": {
     "preautotest-once": "node -e \"console.log('Tests started: ', new Date());\"",
     "autotest-once": "mocha index.spec.js --reporter mocha-yar",
-    "autotest": "nodemon -q -x \"run-s -s autotest-once\"",
-    "autolint": "nodemon -q -x \"run-s -s lint\"",
+    "autotest": "nodemon -q -x \"npm run autotest-once\"",
+    "autolint": "nodemon -q -x \"npm run lint\"",
     "prelint": "node -e \"console.log('Linting started: ', new Date());\"",
     "lint": "jshint index.js",
     "postlint": "node -e \"console.log('Linting completed: ', new Date());\"",

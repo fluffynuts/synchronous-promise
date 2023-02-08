@@ -374,7 +374,7 @@ describe("synchronous-promise", function () {
 
     it("should prevent the handlers after the error from being called", function () {
       let captured = null;
-      createResolved("123").catch(function (e) {
+      createResolved("123").catch(function () {
       }).then(function () {
         throw "foo";
       }).then(function () {
@@ -581,7 +581,7 @@ describe("synchronous-promise", function () {
       const promise = createResolved("123");
       expect(function () {
         promise.resume();
-      }).not.to.throw;
+      }).not.to.throw();
     });
 
     it("should resume resolution operations after the last pause", function () {
@@ -1345,7 +1345,6 @@ describe("synchronous-promise", function () {
           }).then(result => {
           events.push(`then2 received: ${result}`);
           events.push("then2");
-          console.log(events);
         }).finally(() => {
           events.push("finally");
         });
