@@ -684,7 +684,7 @@ describe("synchronous-promise", function () {
     });
 
     it("should resolve with all values from given promise or none promise variable args", function () {
-      const all = SynchronousPromise.all(["123", createResolved("abc")]);
+      const all = SynchronousPromise.all([ "123", createResolved("abc") ]);
       let captured = null;
 
       all.then(function (data) {
@@ -699,7 +699,7 @@ describe("synchronous-promise", function () {
     it("should resolve with all values from given resolved promises as an array", function () {
       const p1 = createResolved("abc"),
         p2 = createResolved("123"),
-        all = SynchronousPromise.all([p1, p2]);
+        all = SynchronousPromise.all([ p1, p2 ]);
       let captured = null;
 
       all.then(function (data) {
@@ -735,14 +735,14 @@ describe("synchronous-promise", function () {
         resolve2 = resolve;
       });
 
-      SynchronousPromise.all([p1, p2]).then(function (data) {
+      SynchronousPromise.all([ p1, p2 ]).then(function (data) {
         captured = data;
       });
 
       resolve2("a");
       resolve1("b");
 
-      expect(captured).to.deep.equal(["b", "a"]);
+      expect(captured).to.deep.equal([ "b", "a" ]);
     });
 
     it("should reject if any promise rejects", function () {
@@ -780,7 +780,7 @@ describe("synchronous-promise", function () {
     });
 
     it("should resolve with first value from given promise or none promise variable args", function () {
-      const any = SynchronousPromise.any(["123", createResolved("abc")]);
+      const any = SynchronousPromise.any([ "123", createResolved("abc") ]);
       let captured = null;
 
       any.then(function (data) {
@@ -854,7 +854,7 @@ describe("synchronous-promise", function () {
         reject2 = reject;
       });
 
-      SynchronousPromise.any([p1, p2]).catch(function (data) {
+      SynchronousPromise.any([ p1, p2 ]).catch(function (data) {
         capturedError = data;
       });
 
@@ -862,10 +862,10 @@ describe("synchronous-promise", function () {
       reject1("b");
 
       expect(capturedError).to.have.property("errors");
-      expect(capturedError).property("errors").to.deep.equal(["b", "a"]);
+      expect(capturedError).property("errors").to.deep.equal([ "b", "a" ]);
     });
 
-    describe("in browsers supporting AggregateError", function() {
+    describe("in browsers supporting AggregateError", function () {
 
       // Used to restore previous global.window value
       let windowRef = null;
@@ -879,7 +879,7 @@ describe("synchronous-promise", function () {
         }
       }
 
-      beforeEach(function() {
+      beforeEach(function () {
         // Mock window object with AggregateError
         windowRef = global.window;
         // noinspection JSConstantReassignment
@@ -954,7 +954,7 @@ describe("synchronous-promise", function () {
     });
 
     it("should resolve with all values from given promise or none promise variable args", function () {
-      const allSettled = SynchronousPromise.allSettled(["123", createResolved("abc")]);
+      const allSettled = SynchronousPromise.allSettled([ "123", createResolved("abc") ]);
       let captured = null;
 
       allSettled.then(function (data) {
@@ -969,7 +969,7 @@ describe("synchronous-promise", function () {
     it("should resolve with all values from given resolved promises as an array", function () {
       const p1 = createResolved("abc"),
         p2 = createResolved("123"),
-        allSettled = SynchronousPromise.allSettled([p1, p2]);
+        allSettled = SynchronousPromise.allSettled([ p1, p2 ]);
       let captured = null;
 
       allSettled.then(function (data) {
@@ -1005,7 +1005,7 @@ describe("synchronous-promise", function () {
         resolve2 = resolve;
       });
 
-      SynchronousPromise.allSettled([p1, p2]).then(function (data) {
+      SynchronousPromise.allSettled([ p1, p2 ]).then(function (data) {
         captured = data;
       });
 
@@ -1088,7 +1088,7 @@ describe("synchronous-promise", function () {
             }).catch(function (err) {
               error = err;
             }),
-            expected = {key: "value"};
+            expected = { key: "value" };
           // Act
           sut.resolve(expected);
           // Assert
@@ -1132,7 +1132,7 @@ describe("synchronous-promise", function () {
             }).catch(function (err) {
               error = err;
             }),
-            expected = {key: "value"};
+            expected = { key: "value" };
           // Act
           sut.reject(expected);
           // Assert
@@ -1256,19 +1256,6 @@ describe("synchronous-promise", function () {
       expect(captured).to.equal("finally data");
     });
 
-    it(`should start a new promise chain after rejection, with non-throwing finally`, async () => {
-      // Arrange
-      let called = false;
-      // Act
-      SynchronousPromise.reject("le error")
-        .finally(function () {
-        }).then(function () {
-        called = true;
-      });
-      // Assert
-      expect(called).to.be.true;
-    });
-
     it(`should start a new promise chain after rejection, with resolving finally`, async () => {
       // Arrange
       let captured = null;
@@ -1279,7 +1266,7 @@ describe("synchronous-promise", function () {
           return SynchronousPromise.resolve("le data");
         }).then(function (data) {
         captured = data;
-      }).catch(function(err) {
+      }).catch(function (err) {
         capturedErr = err;
       });
       // Assert
@@ -1329,7 +1316,7 @@ describe("synchronous-promise", function () {
         });
         // Assert
         expect(events).to.eql(
-          ["initial", "then", "finally"]
+          [ "initial", "then", "finally" ]
         );
       });
 
@@ -1350,7 +1337,7 @@ describe("synchronous-promise", function () {
         });
         // Assert
         expect(events).to.eql(
-          ["initial", "then1", "then2 received: then1", "then2", "finally"]
+          [ "initial", "then1", "then2 received: then1", "then2", "finally" ]
         );
       });
 
@@ -1383,11 +1370,11 @@ describe("synchronous-promise", function () {
           .finally(() => {
             events.push("finally")
           });
-        expect(events).to.eql(["result: init"]);
+        expect(events).to.eql([ "result: init" ]);
         // Act
         promise.resume();
         // Assert
-        expect(events).to.eql(["result: init", "resumed", "finally"]);
+        expect(events).to.eql([ "result: init", "resumed", "finally" ]);
       });
 
       it(`should pass the result onto the next .then`, async () => {
@@ -1413,7 +1400,8 @@ describe("synchronous-promise", function () {
         // Arrange
         // Act
         const result = await SynchronousPromise.resolve("expected")
-          .finally(() => {});
+          .finally(() => {
+          });
         // Assert
         expect(result)
           .to.equal("expected");
@@ -1438,7 +1426,7 @@ describe("synchronous-promise", function () {
                 });
 
               expect(events)
-                .to.eql(["init", "result: resolve", "then"])
+                .to.eql([ "init", "result: resolve", "then" ])
             });
 
             it("calls .catch() but not previous .then()s after being rejected", () => {
@@ -1458,7 +1446,7 @@ describe("synchronous-promise", function () {
                 });
 
               expect(events)
-                .to.eql(["init", "error: reject"])
+                .to.eql([ "init", "error: reject" ])
             });
 
             it("calls .finally() after .then()", () => {
@@ -1477,7 +1465,7 @@ describe("synchronous-promise", function () {
                 });
 
               expect(events)
-                .to.eql(["result: init", "then", "finally"])
+                .to.eql([ "result: init", "then", "finally" ])
             });
 
             it("calls .finally() after .catch()", () => {
@@ -1499,7 +1487,7 @@ describe("synchronous-promise", function () {
                 });
 
               expect(events)
-                .to.eql(["error: init", "finally"])
+                .to.eql([ "error: init", "finally" ])
             })
           });
 
@@ -1531,7 +1519,7 @@ describe("synchronous-promise", function () {
                   });
                 promise.resolve("resolve");
 
-                expect(events).to.eql(["result: resolve", "then"])
+                expect(events).to.eql([ "result: resolve", "then" ])
               })
             });
 
@@ -1551,7 +1539,7 @@ describe("synchronous-promise", function () {
               promise.reject("reject");
 
               expect(events)
-                .to.eql(["error: reject"])
+                .to.eql([ "error: reject" ])
             });
 
             describe("calls .finally() after .then()", () => {
@@ -1591,9 +1579,9 @@ describe("synchronous-promise", function () {
                 promise.resolve("resolve");
 
                 expect(events)
-                  .not.to.eql(["finally", "result: undefined", "then"]);
+                  .not.to.eql([ "finally", "result: undefined", "then" ]);
                 expect(events)
-                  .to.eql(["result: resolve", "then", "finally"])
+                  .to.eql([ "result: resolve", "then", "finally" ])
               })
             });
 
@@ -1634,9 +1622,9 @@ describe("synchronous-promise", function () {
                 promise.reject("reject");
 
                 expect(events)
-                  .not.to.eql(["finally", "result: undefined"]);
+                  .not.to.eql([ "finally", "result: undefined" ]);
                 expect(events)
-                  .to.eql(["error: reject", "finally"])
+                  .to.eql([ "error: reject", "finally" ])
               })
             })
           });
@@ -1656,7 +1644,7 @@ describe("synchronous-promise", function () {
                   });
 
                 expect(events)
-                  .to.eql(["result: init"])
+                  .to.eql([ "result: init" ])
               });
 
               it("calls .then() after the inital initialization after promise.resume is called", () => {
@@ -1673,7 +1661,7 @@ describe("synchronous-promise", function () {
                 promise.resume();
 
                 expect(events)
-                  .to.eql(["result: init", "resumed"])
+                  .to.eql([ "result: init", "resumed" ])
               })
             });
 
@@ -1687,12 +1675,12 @@ describe("synchronous-promise", function () {
                     throw Error("resumed")
                   })
                   .pause()
-                  .catch(({message}) => {
+                  .catch(({ message }) => {
                     events.push(`catch: ${message}`)
                   });
 
                 expect(events)
-                  .to.eql(["result: init"])
+                  .to.eql([ "result: init" ])
               });
 
               it("calls .catch() after the inital initialization after promise.resume is called", () => {
@@ -1704,13 +1692,13 @@ describe("synchronous-promise", function () {
                     throw Error("resumed")
                   })
                   .pause()
-                  .catch(({message}) => {
+                  .catch(({ message }) => {
                     events.push(`catch: ${message}`)
                   });
                 promise.resume();
 
                 expect(events)
-                  .to.eql(["result: init", "catch: resumed"])
+                  .to.eql([ "result: init", "catch: resumed" ])
               })
             });
 
@@ -1733,7 +1721,7 @@ describe("synchronous-promise", function () {
                 expect(events)
                   .not.to.contain("finally");
                 expect(events)
-                  .to.eql(["result: init"])
+                  .to.eql([ "result: init" ])
               });
 
               it("calls .then() and .finally() once promise.resume is called", () => {
@@ -1753,9 +1741,9 @@ describe("synchronous-promise", function () {
                 promise.resume();
 
                 expect(events)
-                  .not.to.eql(["result: init", "finally", "resumed"]);
+                  .not.to.eql([ "result: init", "finally", "resumed" ]);
                 expect(events)
-                  .to.eql(["result: init", "resumed", "finally"])
+                  .to.eql([ "result: init", "resumed", "finally" ])
               })
             });
 
@@ -1769,7 +1757,7 @@ describe("synchronous-promise", function () {
                     throw Error("resumed")
                   })
                   .pause()
-                  .catch(({message}) => {
+                  .catch(({ message }) => {
                     events.push(`catch: ${message}`)
                   })
                   .finally(() => {
@@ -1779,7 +1767,7 @@ describe("synchronous-promise", function () {
                 expect(events)
                   .not.to.contain("finally");
                 expect(events)
-                  .to.eql(["result: init"])
+                  .to.eql([ "result: init" ])
               });
 
               it("calls .catch() and .finally() once promise.resume is called", () => {
@@ -1791,7 +1779,7 @@ describe("synchronous-promise", function () {
                     throw Error("resumed")
                   })
                   .pause()
-                  .catch(({message}) => {
+                  .catch(({ message }) => {
                     events.push(`catch: ${message}`)
                   })
                   .finally(() => {
@@ -1800,9 +1788,9 @@ describe("synchronous-promise", function () {
                 promise.resume();
 
                 expect(events)
-                  .not.to.eql(["result: init", "finally", "catch: resumed"]);
+                  .not.to.eql([ "result: init", "finally", "catch: resumed" ]);
                 expect(events)
-                  .to.eql(["result: init", "catch: resumed", "finally"])
+                  .to.eql([ "result: init", "catch: resumed", "finally" ])
               })
             })
           })
@@ -1828,7 +1816,9 @@ describe("synchronous-promise", function () {
             const resolvedWithPromise = new PromiseImpl((resolve) => {
               record.push("resolvedWithPromise body called");
               return resolve(delay);
-            }).then(() => { record.push("after resolvedWithPromise");});
+            }).then(() => {
+              record.push("after resolvedWithPromise");
+            });
             resolvedWithPromise.then(() => record.push("resolvedWithPromise is fulfilled"))
           }
 
@@ -1848,6 +1838,35 @@ describe("synchronous-promise", function () {
           expect(record).to.contain("after resolvedWithPromise");
           expect(record).to.contain("resolvedWithPromise is fulfilled");
           // Assert
+        });
+      });
+
+      describe("github issue #53", () => {
+        it("should mirror native promises when it comes to handling errors thrown in the .catch passing through .finally", async () => {
+          // Arrange
+          // Act
+          let native
+          await Promise.reject(new Error('boom')).finally(() => {
+          })
+            .then((value) => {
+              native = [ 'resolved', value ]
+            }, (err) => {
+              native = [ 'rejected', err.message ]
+            })
+
+// synchronous-promise settles synchronously — its `.then` runs in the act.
+          let sync
+          SynchronousPromise.reject(new Error('boom')).finally(() => {
+          })
+            .then((value) => {
+              sync = [ 'resolved', value ]
+            }, (err) => {
+              sync = [ 'rejected', err.message ]
+            })
+
+          // Assert
+          expect(sync)
+            .to.deep.equal(native);
         });
       });
     });

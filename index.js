@@ -97,6 +97,9 @@ SynchronousPromise.prototype = {
             return result;
           });
         } else {
+          if (err) {
+            throw err;
+          }
           return result;
         }
       }
